@@ -1,0 +1,173 @@
+هذا التطبيق لإدارة المسارات التعليمية:
+المسار التعليمي دالة عليه باسم Course :
+     في الDB  كل مسار تعليمي له الحقول التالية:
+     1.pathid 
+     2.title
+     3.description
+     4.level
+     5.category
+     7.estimated_duration
+     8.projects
+     9.is_public
+     10.instructor : مين انشأه
+     11.enrolled_learners:
+               المتعلمين المنضمين للمسار
+      12.created_at          
+      13.updated_at
+      14.is_active
+
+
+1. أنشاء مسار (للمشرف)
+2.عرض بيانات مسار محدد للتعديل
+3. تعديل مسار
+4.حذف مسار:
+      تأكيد حذف المسار
+      تنفيذ الحف عند الموافقة (موافقة المشرف)
+5.عرض تفاصيل مسار محدد للمتعلم
+6.الانظمام لمسار للمتعلم
+7.عرض المسارات التي انظم لها المتعلم
+
+
+
+endpoint:
+ الاساسي:
+   http://localhost:8000/
+A.للمشرف
+1. أنشاء مسار (للمشرف)
+  api/courses/create/
+  2.عرض بيانات مسار محدد للتعديل :
+   api/courses/<uuid:pathid>/
+      uuid:pathid رقم المسار أو معرف المسار
+  3. تعديل مسار :
+   api/courses/<uuid:pathid>/update/
+   4.حذف مسار :
+     A. تأكيد حذف المسار:
+         api/courses/<uuid:pathid>/confirm-delete/
+         B. تنفيذ الحف عند الموافقة (موافقة المشرف):
+            api/courses/<uuid:pathid>/delete/
+
+
+B. للمتعلم
+
+    5.عرض تفاصيل مسار محدد :
+     api/courses/<uuid:pathid>/details/
+
+     6.الانظمام لمسار :
+       api/courses/<uuid:pathid>/join/
+       7.عرض المسارات التي انظم لها المتعلم:
+         api/courses/my-courses/
+    8.التحقق من الانظمام في المسار :
+      api/courses/<uuid:pathid>/check-enrollment/
+
+
+
+
+
+
+
+
+
+
+ملاحظة من اجل العلاقات في ال class diagram:
+المسار يوجد فيه اكثر من مشروع 
+المشروع يوجد في مسار واحد فقط 
+يعني علاقة mant-to-one
+
+
+
+
+المتعلم ينضم لعدة مسارات 
+المسار ينظم له اكثر من متعلم
+يعني علاقة many-to-many
+ , حققتها ManyToManyField 
+ #  **حقل جديد: فقط للمتعلمين المنضمين**
+    enrolled_learners = models.ManyToManyField(
+        CustomUser,
+        related_name='enrolled_courses_as_learner',
+        verbose_name='المتعلمين المنضمين',
+        blank=True,
+        help_text='المتعلمين المنضمين فقط - لا يتم إضافة مشرفين',
+        limit_choices_to={'user_type': 'learner'} 
+    )
+
+
+
+
+
+1. create path:
+ post http://127.0.0.1:8000/api/courses/create/
+  header: Content-Type: application/json
+     Authorization: type:Bearer token   و نضع التوكين للمشرف
+    body:
+    {
+    "title": "مسار تعلم بايثون للمبتدئين",
+    "description": "مسار شامل لتعلم لغة البرمجة بايثون من الصفر وحتى الاحتراف. سيتعلم الطلاب أساسيات البرمجة والمفاهيم المتقدمة والتطبيقات العملية.",
+    "level": "beginner",
+    "category": "web",
+    "estimated_duration": 80,
+    "is_public": true
+}
+
+يجب ان اراها 
+2. update path:
+  post http://127.0.0.1:8000/api/courses/path_id/update/
+  header: Content-Type: application/json
+     Authorization: type:Bearer token   و نضع التوكين للمشرف
+    body:
+    {
+    "title": "مسار تعلم بايثون للمبتدئين",
+    "description": "مسار شامل لتعلم لغة البرمجة بايثون من الصفر وحتى الاحتراف. سيتعلم الطلاب أساسيات البرمجة والمفاهيم المتقدمة والتطبيقات العملية.",
+    "level": "beginner",
+    "category": "web",
+    "estimated_duration": 100,
+    "is_public": true
+}
+3.get all pathes:
+   get http://127.0.0.1:8000/api/courses/
+    header: Content-Type: application/json
+     Authorization: type:Bearer token   و نضع التوكين للمشرف
+
+
+
+4.جلب معلومات مسار محدد:
+  get http://127.0.0.1:8000/api/courses/path_id/
+    header: Content-Type: application/json
+     Authorization: type:Bearer token   و نضع التوكين للمشرف
+
+
+5.تأكيد الحذف:
+ GET http://127.0.0.1:8000/api/courses/1/confirm-delete/
+ Content-Type: application/json
+ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..
+
+
+
+
+ 6. حذف مسار (Delete Course)
+ DELETE http://127.0.0.1:8000/api/courses/1/delete/
+ Content-Type: application/json
+ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+
+
+
+
+
+
+للمتعلم:
+ 7.عرض المسارات 
+ GET http://127.0.0.1:8000/api/courses/
+ Content-Type: application/json
+ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..
+
+ 8. الانظمام لمسار
+post http://127.0.0.1:8000/api/courses/1/join/
+ Content-Type: application/json
+ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..
+
+
+
+ 9.عرض المسارات المنضم لها
+ GET http://127.0.0.1:8000/api/courses/my-courses
+ Content-Type: application/json
+ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..

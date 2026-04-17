@@ -1,0 +1,49 @@
+api/projects/
+
+1. create project 
+post http://127.0.0.1:8000/api/projects/create/
+ Content-Type: application/json
+ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+  
+
+2. update project
+  put http://127.0.0.1:8000/api/projects/project_id/update/
+  Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+  
+
+3.delete project ConfirmDelete
+   http://127.0.0.1:8000/api/projects/project_id/confirm-delete/
+   Content-Type: application/json
+   Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+
+4. delete project
+http://127.0.0.1:8000/api/projects/project_id/delete/
+  Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+for admin and learner
+5. view projects list
+  http://127.0.0.1:8000/api/projects/
+  Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+for learner
+6. display the project details
+ Get http://127.0.0.1:8000/api/projects/project_id/
+  Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+
+
+7. pisplay the courses projects
+ Get http://127.0.0.1:8000/api/projects/http://127.0.0.1:8000/api/projects/course_id/
+ Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+for learner
+8.start project
+ POST http://127.0.0.1:8000/api/projects/project_id/start/
+ Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...

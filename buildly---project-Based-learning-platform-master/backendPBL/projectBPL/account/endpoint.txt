@@ -1,0 +1,82 @@
+1. create supervisor
+  post http://127.0.0.1:8000/api/account/register/admin/
+  Content-Type: application/json
+  Body:
+      {
+        "email":"admin1@gmail.com",
+        "password":"Admin123!",
+        "password2":"Admin123!"
+        }
+
+
+
+2. create leaner:
+   post http://127.0.0.1:8000/api/account/register/learner/
+  header: Content-Type: application/json
+  Body:
+      {
+        "email":"learner1@gmail.com",
+        "password":"learner123!",
+        "password2":"learner123!"
+        }
+
+    
+
+3. login for any usertype:
+  post http://127.0.0.1:8000/api/account/login/
+ header: Content-Type: application/json  Body:
+      {
+        "email":"learner1@gmail.com",
+        "password":"learner123!",
+        }
+        or:
+        Content-Type: application/json
+  Body:
+      {
+        "email":"admin1@gmail.com",
+        "password":"Admin123!",
+        }
+
+
+
+4. give profile:
+  git  http://127.0.0.1:8000/api/account/profile/
+     header: Content-Type: application/json
+     Authorization: type:Bearer token و نضع التوكين
+       و بيعطي معلومات الملف الشخصي
+
+5.update profile:
+  put  http://127.0.0.1:8000/api/account/profile/
+     header: Content-Type: application/json
+     Authorization: type:Bearer token و نضع التوكين
+    body:
+    {
+        "email":newemail...
+    }
+
+6.logout:
+  post http://127.0.0.1:8000/api/account/logout/
+  eader: Content-Type: application/json
+     Authorization: type:Bearer token و نضع التوكين
+     body:
+     {
+        "refresh_token":"jkhg..... }
+
+7. refresh token :
+   post http://127.0.0.1:8000/api/account/token/refresh/
+     Body: {"refresh": "{{refresh_token}}"}
+
+
+
+
+
+8. leaner dashboard
+  Get   http://127.0.0.1:8000/api/account/learner/dashboard/
+  Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+
+9.leaner progress
+ Get   http://127.0.0.1:8000/api/account/learner/progress/
+ Content-Type: application/json
+  Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
