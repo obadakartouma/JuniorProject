@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from .models import Project
 from .serializers import ProjectCreateSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectUpdateSerializer, ProjectDeleteConfirmationSerializer
 from courses.models import Course
+from progress.models import ProjectProgress
 
 
 class IsCourseInstructor(permissions.BasePermission):
@@ -559,8 +560,29 @@ class StartProjectView(APIView):
                     'message': _('يجب الانضمام للمسار أولاً لبدء المشروع')
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            # 4. بدء المشروع (بدون حفظ في قاعدة بيانات)
-            # هنا يمكنك إضافة منطق بدء المشروع
+            
+            progress, created = ProjectProgress.objects.get_or_create(
+                user=request.user,
+                project=project
+            )
+
+            if progress.status == 'not_started':
+                progress.status = 'in_progress'
+                progress.started_at = timezone.now()
+                progress.progress_percentage = 0
+                progress.save()
+
+            elif progress.status == 'in_progress':
+                return Response({
+                    'success': True,
+                    'message': _('المشروع قيد التنفيذ بالفعل'),
+                }, status=status.HTTP_200_OK)
+
+            elif progress.status == 'completed':
+                return Response({
+                    'success': True,
+                    'message': _('لقد أكملت هذا المشروع بالفعل'),
+                }, status=status.HTTP_200_OK)
             
             return Response({
                 'success': True,

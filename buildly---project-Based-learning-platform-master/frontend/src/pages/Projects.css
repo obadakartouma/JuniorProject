@@ -69,3 +69,36 @@
   }
 }
 
+.projects-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  margin-top: 20px;
+}
+
+.project-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.project-section:nth-child(1) .section-title {
+  color: #6b7280; /* grau */
+}
+
+.project-section:nth-child(2) .section-title {
+  color: #f59e0b; /* gelb */
+}
+
+.project-section:nth-child(3) .section-title {
+  color: #10b981; /* grün */
+}
+

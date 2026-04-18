@@ -34,11 +34,16 @@ const ProjectDetail = () => {
   const handleStart = async () => {
     try {
       setStarting(true)
-      await projectsAPI.start(id)
-      alert('تم بدء المشروع بنجاح!')
+
+      const response = await projectsAPI.start(id)
+
+      alert(response.data?.message || 'تم بدء المشروع بنجاح!')
     } catch (err) {
       const errorMsg =
-        err.response?.data?.message || 'فشل بدء المشروع'
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        'فشل بدء المشروع'
+
       alert(errorMsg)
     } finally {
       setStarting(false)

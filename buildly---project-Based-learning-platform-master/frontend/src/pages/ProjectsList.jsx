@@ -11,6 +11,7 @@ const ProjectsList = () => {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [progress, setProgress] = useState({})
 
   useEffect(() => {
     fetchProjects()
@@ -19,8 +20,14 @@ const ProjectsList = () => {
   const fetchProjects = async () => {
     try {
       setLoading(true)
-      const response = await projectsAPI.list(courseId)
-      setProjects(response.data.projects || [])
+
+      const [projectsRes, progressRes] = await Promise.all([
+        projectsAPI.list(courseId),
+        projectsAPI.getProgress()
+      ])
+
+      setProjects(projectsRes.data.projects || [])
+      setProgress(progressRes.data || {})
     } catch (err) {
       setError('فشل تحميل المشاريع')
       console.error(err)
@@ -40,6 +47,102 @@ const ProjectsList = () => {
     } catch (err) {
       alert('فشل حذف المشروع')
     }
+  }
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'مكتمل'
+      case 'in_progress':
+        return 'قيد التنفيذ'
+      default:
+        return 'لم يبدأ'
+    }
+  }
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'status-completed'
+      case 'in_progress':
+        return 'status-progress'
+      default:
+        return 'status-not-started'
+    }
+  }
+
+  const getProjectStatus = (projectId) => {
+    return progress[projectId]?.status || 'not_started'
+  }
+
+  const groupedProjects = {
+    not_started: [],
+    in_progress: [],
+    completed: []
+  }
+
+  projects.forEach((project) => {
+    const status = getProjectStatus(project.project_id)
+    groupedProjects[status].push(project)
+  })
+
+  const ProjectSection = ({ title, projects, isAdmin, handleDelete }) => {
+    if (!projects.length) return null
+
+    return (
+      <div className="project-section">
+        <h2 className="section-title">{title}</h2>
+
+        <div className="projects-grid">
+          {projects.map((project) => (
+            <div key={project.project_id} className="project-card">
+
+              <div className="project-header">
+                <h3>{project.title}</h3>
+
+                <div className="project-badges">
+                  <span className="badge badge-info">{project.level_display}</span>
+                  <span className="badge badge-warning">{project.language_display}</span>
+                </div>
+              </div>
+
+              <p className="project-description">
+                {project.description?.substring(0, 150)}...
+              </p>
+
+              <div className="project-meta">
+                <div className="meta-item">
+                  <span className="meta-label">المسار:</span>
+                  <span className="meta-value">{project.course_title}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="meta-label">الوقت:</span>
+                  <span className="meta-value">{project.estimated_time} ساعة</span>
+                </div>
+              </div>
+
+              <div className="project-actions">
+                <Link to={`/projects/${project.project_id}`} className="btn btn-primary">
+                  عرض التفاصيل
+                </Link>
+
+                {isAdmin && (
+                  <>
+                    <Link to={`/projects/${project.project_id}/edit`} className="btn btn-secondary">
+                      تعديل
+                    </Link>
+                    <button onClick={() => handleDelete(project.project_id)} className="btn btn-danger">
+                      حذف
+                    </button>
+                  </>
+                )}
+              </div>
+
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   if (loading) {
@@ -65,64 +168,49 @@ const ProjectsList = () => {
         )}
       </div>
 
-      {projects.length === 0 ? (
-        <div className="empty-state">
-          <p>لا توجد مشاريع متاحة</p>
+      <div className="container">
+        <div className="page-header">
+          <h1>المشاريع التعليمية</h1>
+
           {isAdmin && (
             <Link to="/projects/create" className="btn btn-primary">
-              إنشاء أول مشروع
+              إضافة مشروع جديد
             </Link>
           )}
         </div>
-      ) : (
-        <div className="projects-grid">
-          {projects.map((project) => (
-            <div key={project.project_id} className="project-card">
-              <div className="project-header">
-                <h3>{project.title}</h3>
-                <div className="project-badges">
-                  <span className="badge badge-info">{project.level_display}</span>
-                  <span className="badge badge-warning">{project.language_display}</span>
-                </div>
-              </div>
-              <p className="project-description">
-                {project.description?.substring(0, 150)}...
-              </p>
-              <div className="project-meta">
-                <div className="meta-item">
-                  <span className="meta-label">المسار:</span>
-                  <span className="meta-value">{project.course_title}</span>
-                </div>
-                <div className="meta-item">
-                  <span className="meta-label">الوقت المقدر:</span>
-                  <span className="meta-value">{project.estimated_time} ساعة</span>
-                </div>
-              </div>
-              <div className="project-actions">
-                <Link to={`/projects/${project.project_id}`} className="btn btn-primary">
-                  عرض التفاصيل
-                </Link>
-                {isAdmin && (
-                  <>
-                    <Link
-                      to={`/projects/${project.project_id}/edit`}
-                      className="btn btn-secondary"
-                    >
-                      تعديل
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(project.project_id)}
-                      className="btn btn-danger"
-                    >
-                      حذف
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+
+        {projects.length === 0 ? (
+          <div className="empty-state">
+            <p>لا توجد مشاريع متاحة</p>
+          </div>
+        ) : (
+          <div className="projects-sections">
+
+            <ProjectSection
+              title="🆕 لم يبدأ"
+              projects={groupedProjects.not_started}
+              isAdmin={isAdmin}
+              handleDelete={handleDelete}
+            />
+
+            <ProjectSection
+              title="🔄 قيد التنفيذ"
+              projects={groupedProjects.in_progress}
+              isAdmin={isAdmin}
+              handleDelete={handleDelete}
+            />
+
+            <ProjectSection
+              title="✅ مكتمل"
+              projects={groupedProjects.completed}
+              isAdmin={isAdmin}
+              handleDelete={handleDelete}
+            />
+
+          </div>
+        )}
+      </div>
+
     </div>
   )
 }

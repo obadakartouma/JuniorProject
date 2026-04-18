@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'account',
     'courses',
     'projects',
+    'progress'
     ]
 
 MIDDLEWARE = [

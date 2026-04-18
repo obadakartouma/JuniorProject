@@ -148,6 +148,9 @@ export const projectsAPI = {
 
   start: (id) =>
     api.post(`/projects/${id}/start/`),
+
+  getProgress: () =>
+    api.get('/progress/projects/'),
 }
 
 export default api
