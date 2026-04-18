@@ -12,6 +12,7 @@ const ProjectsList = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [progress, setProgress] = useState({})
+  const [levelFilter, setLevelFilter] = useState('all')
 
   useEffect(() => {
     fetchProjects()
@@ -75,13 +76,18 @@ const ProjectsList = () => {
     return progress[projectId]?.status || 'not_started'
   }
 
+  const filteredProjects = projects.filter((project) => {
+    if (levelFilter === 'all') return true
+    return project.level === levelFilter
+  })
+
   const groupedProjects = {
     not_started: [],
     in_progress: [],
     completed: []
   }
 
-  projects.forEach((project) => {
+  filteredProjects.forEach((project) => {
     const status = getProjectStatus(project.project_id)
     groupedProjects[status].push(project)
   })
@@ -161,6 +167,19 @@ const ProjectsList = () => {
     <div className="container">
       <div className="page-header">
         <h1>المشاريع التعليمية</h1>
+        <div className="filters-bar">
+          <select
+            value={levelFilter}
+            onChange={(e) => setLevelFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">جميع المستويات</option>
+            <option value="beginner">مبتدئ</option>
+            <option value="intermediate">متوسط</option>
+            <option value="advanced">متقدم</option>
+            <option value="expert">خبير</option>
+          </select>
+        </div>
         {isAdmin && (
           <Link to="/projects/create" className="btn btn-primary">
             إضافة مشروع جديد
