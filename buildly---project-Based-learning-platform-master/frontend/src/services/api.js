@@ -83,6 +83,9 @@ export const accountAPI = {
 
   getLearnerProgress: () =>
     api.get('/account/learner/progress/'),
+
+  submitQuiz: (level) =>
+    api.post("/account/quiz/submit/", { level }),
 }
 
 // Courses APIs

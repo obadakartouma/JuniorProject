@@ -7,7 +7,7 @@ from .views import (
     LoginView,
     LogoutView,
     ProfileView,
-
+    SubmitQuizView
 )
 from .views_dashboard import (
     LearnerDashboardView,
@@ -21,6 +21,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', ProfileView.as_view(), name='profile'),  
+    path('quiz/submit/', SubmitQuizView.as_view(), name='submit-quiz'),
 
 
 

@@ -43,6 +43,25 @@ class CustomUser(AbstractUser):
         default='learner',
         verbose_name='نوع المستخدم'
     )
+
+    is_rated = models.BooleanField(
+        default=False,
+        verbose_name='هل تم تقييم المستخدم'
+    )
+
+    LEVEL_CHOICES = (
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+    )
+
+    level = models.CharField(
+        max_length=20,
+        choices=LEVEL_CHOICES,
+        null=True,
+        blank=True,
+        verbose_name='مستوى المستخدم'
+    )
     
     # **حقل جديد: المسارات التعليمية المنضم لها المتعلم (فقط للمتعلمين)**
     enrolled_courses_titles = models.JSONField(

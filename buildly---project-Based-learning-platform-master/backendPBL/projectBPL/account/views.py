@@ -152,7 +152,11 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         
         response_data = {
             'message': _('تم جلب بيانات الملف الشخصي'),
-            'user': serializer.data
+            'user': serializer.data,
+            'quiz_info': {
+                'is_rated': instance.is_rated,
+                'level': instance.level
+            }
         }
         
         # **إضافة بيانات إضافية للمتعلمين فقط**
@@ -176,4 +180,32 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         return Response({
             'message': _('تم تحديث الملف الشخصي بنجاح'),
             'user': serializer.data
+        })
+    
+
+class SubmitQuizView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+
+        if not user.is_learner:
+            return Response({
+                'error': 'only learner can take a quiz'
+            }, status=403)
+
+        level = request.data.get('level')
+
+        if level not in ['beginner', 'intermediate', 'advanced']:
+            return Response({
+                'error': 'Unknown level'
+            }, status=400)
+
+        user.level = level
+        user.is_rated = True
+        user.save()
+
+        return Response({
+            'message': 'Quiz saved',
+            'level': user.level
         })

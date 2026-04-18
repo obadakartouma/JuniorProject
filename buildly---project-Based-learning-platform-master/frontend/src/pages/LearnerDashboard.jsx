@@ -41,7 +41,14 @@ const LearnerDashboard = () => {
     return null
   }
 
-  const { dashboard_stats, enrolled_projects, learning_progress, notifications, recent_activity, suggested_projects } = dashboardData
+  const {
+    dashboard_stats,
+    enrolled_projects,
+    learning_progress,
+    notifications,
+    recent_activity,
+    suggested_projects
+  } = dashboardData
 
   return (
     <div className="container">
@@ -203,21 +210,38 @@ const LearnerDashboard = () => {
           <div className="card-header">
             <h2>مشاريع مقترحة</h2>
           </div>
-          <div className="suggested-projects">
-            {suggested_projects.map((project) => (
-              <div key={project.id} className="suggested-project-card">
-                <h4>{project.title}</h4>
-                <p>{project.description}</p>
-                <div className="project-tags">
-                  <span className="badge">{project.category}</span>
-                  <span className="badge">{project.difficulty}</span>
+
+          
+          {!dashboardData?.user_profile?.is_rated ? (
+            <div className="empty-state">
+              <p>قم بإجراء الاختبار للحصول على مشاريع مناسبة لك</p>
+              <Link to="/courses" className="btn btn-primary">
+                ابدأ الاختبار
+              </Link>
+            </div>
+          ) : suggested_projects?.length > 0 ? (
+
+            <div className="suggested-projects">
+              {suggested_projects.map((project) => (
+                <div key={project.id} className="suggested-project-card">
+                  <h4>{project.title}</h4>
+                  <p>{project.description}</p>
+
+                  <div className="project-tags">
+                    <span className="badge">{project.category}</span>
+                    <span className="badge">{project.difficulty}</span>
+                  </div>
+
+                  <div className="match-percentage">
+                    <span>يتناسب معك: {project.match_percentage}%</span>
+                  </div>
                 </div>
-                <div className="match-percentage">
-                  <span>يتناسب معك: {project.match_percentage}%</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+          ) : (
+            <p className="empty-state">لا توجد مشاريع مناسبة حالياً</p>
+          )}
         </div>
       )}
     </div>

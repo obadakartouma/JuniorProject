@@ -8,6 +8,7 @@ from datetime import timedelta
 from .models import CustomUser
 from .serializers import ProfileSerializer
 import json
+from projects.models import Project
 
 class LearnerDashboardView(APIView):
     """لوحة تحكم المتعلم"""
@@ -203,27 +204,33 @@ class LearnerDashboardView(APIView):
             },
         ]
     
+
     def get_suggested_projects(self, user):
-        """المشاريع المقترحة بناءً على التقدم"""
-        enrolled_courses = user.get_enrolled_courses_list() or []
-        
+        """المشاريع المقترحة حسب مستوى المستخدم"""
+    
+        if not user.is_rated or not user.level:
+            return []
+    
+        projects = Project.objects.filter(
+            level=user.level,
+            is_active=True
+        ).order_by('-created_at')[:6]
+    
         suggestions = []
-        categories = ['تطوير الويب', 'الذكاء الاصطناعي', 'تحليل البيانات', 'تطوير الجوال', 'الأمن السيبراني']
-        
-        for i, category in enumerate(categories[:3]):
+    
+        for p in projects:
             suggestion = {
-                'id': i + 1,
-                'title': f'مشروع {category} متقدم',
-                'description': f'مشروع تطبيقي متقدم في مجال {category}',
-                'category': category,
-                'difficulty': 'متقدم' if i > 1 else 'متوسط',
-                'estimated_time': [40, 50, 60][i],
-                'prerequisites': ['مستوى متوسط', 'معرفة أساسية بالتخصص'],
-                'match_percentage': 80 - (i * 10),
-                'reason': 'يتناسب مع مهاراتك السابقة',
+                'id': p.id,
+                'title': p.title,
+                'description': p.description,
+                'category': p.language,
+                'difficulty': p.get_level_display(),
+                'estimated_time': p.estimated_time,
+                'match_percentage': 90,  # fake. we use it maybe later
+                'reason': 'يتناسب مع مستواك الحالي',
             }
             suggestions.append(suggestion)
-        
+    
         return suggestions
     
     def get_quick_actions(self):

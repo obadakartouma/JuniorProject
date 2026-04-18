@@ -141,7 +141,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'user_type', 'date_joined', 'last_login', 'enrolled_courses_count', 'enrolled_courses_titles')  
+        fields = ('id', 'email', 'user_type', 'date_joined', 'last_login', 'enrolled_courses_count', 'enrolled_courses_titles', 'is_rated', 'level')  
         read_only_fields = ('id', 'user_type', 'date_joined', 'last_login')
     
     # التحقق من تحديث البريد الإلكتروني

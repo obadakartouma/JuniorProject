@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { coursesAPI } from '../services/api'
+import { coursesAPI, accountAPI } from '../services/api'
 import './Courses.css'
+import QuizComponent from './QuizComponent'
 
 const CoursesList = () => {
   const { isAdmin } = useAuth()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showQuiz, setShowQuiz] = useState(false)
+  const [answers, setAnswers] = useState({})
 
   useEffect(() => {
+    checkUser()
     fetchCourses()
   }, [])
 
@@ -27,6 +31,18 @@ const CoursesList = () => {
     }
   }
 
+  const checkUser = async () => {
+    try {
+      const res = await accountAPI.getProfile()
+
+      if (!res.data.quiz_info.is_rated) {
+        setShowQuiz(true)
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   const handleDelete = async (id) => {
     if (!window.confirm('هل أنت متأكد من حذف هذا المسار؟')) {
       return
@@ -40,6 +56,28 @@ const CoursesList = () => {
     }
   }
 
+  const submitQuiz = async (answers) => {
+    try {
+      let score = 0
+
+      Object.values(answers).forEach((a) => {
+        if (a === 1) score++
+      })
+
+      let level = "beginner"
+      if (score >= 8) level = "advanced"
+      else if (score >= 5) level = "intermediate"
+
+      await accountAPI.submitQuiz(level)
+
+      setShowQuiz(false)
+      fetchCourses()
+
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
   if (loading) {
     return (
       <div className="loading">
@@ -50,6 +88,16 @@ const CoursesList = () => {
 
   if (error) {
     return <div className="alert alert-error">{error}</div>
+  }
+
+  if (showQuiz) {
+    return (
+      <div className="quiz-container">
+        <QuizComponent
+          onFinish={submitQuiz}
+        />
+      </div>
+    )
   }
 
   return (
