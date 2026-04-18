@@ -565,6 +565,22 @@ class StartProjectView(APIView):
                 user=request.user,
                 project=project
             )
+            
+            # 3.5 تحقق: هل لديه مشروع قيد التنفيذ؟
+            active_project = ProjectProgress.objects.filter(
+                user=request.user,
+                status='in_progress'
+            ).exclude(project=project).first()
+            
+            if active_project:
+                return Response({
+                    'success': False,
+                    'message': _('❗ لديك مشروع قيد التنفيذ. يرجى إنهاؤه أولاً قبل بدء مشروع جديد.'),
+                    'active_project': {
+                        'id': active_project.project.id,
+                        'title': active_project.project.title,
+                    }
+                }, status=status.HTTP_400_BAD_REQUEST)
 
             if progress.status == 'not_started':
                 progress.status = 'in_progress'
