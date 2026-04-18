@@ -1,7 +1,7 @@
 # projects/serializers.py
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
-from .models import Project
+from .models import Project, ProjectStarterFile
 from courses.models import Course
 
 
@@ -194,11 +194,20 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectDetailSerializer(ProjectListSerializer):
     """Serializer لعرض تفاصيل مشروع معين"""
+    starter_file = serializers.SerializerMethodField()
     
     class Meta(ProjectListSerializer.Meta):
-        fields = ProjectListSerializer.Meta.fields + [
-            # يمكن إضافة حقول إضافية للتفاصيل
-        ]
+        fields = '__all__'
+        
+    def get_starter_file(self, obj):
+        try:
+            file = obj.starter_file
+            return ProjectStarterFileSerializer(
+                file,
+                context=self.context
+            ).data
+        except ProjectStarterFile.DoesNotExist:
+            return None
 
 
 class ProjectUpdateSerializer(serializers.ModelSerializer):
@@ -361,3 +370,20 @@ class ProjectDeleteConfirmationSerializer(serializers.ModelSerializer):
                 'role': 'مشرف' if request.user.is_admin else 'مستخدم'
             }
         return None
+    
+
+
+class ProjectStarterFileSerializer(serializers.ModelSerializer):
+    file_url = serializers.SerializerMethodField()
+    file_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectStarterFile
+        fields = ['id', 'file_url', 'file_name', 'uploaded_at']
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        return request.build_absolute_uri(obj.file.url)
+
+    def get_file_name(self, obj):
+        return obj.file.name.split('/')[-1]

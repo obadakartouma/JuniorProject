@@ -23,6 +23,7 @@ const ProjectCreate = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [fetchingCourses, setFetchingCourses] = useState(true)
+  const [starterFile, setStarterFile] = useState(null)
 
   useEffect(() => {
     fetchCourses()
@@ -64,14 +65,28 @@ const ProjectCreate = () => {
         estimated_time: parseInt(formData.estimated_time),
         order: formData.order ? parseInt(formData.order) : undefined,
       }
+
       const response = await projectsAPI.create(submitData)
+
       if (response.data.success) {
-        navigate(`/projects/${response.data.project.project_id}`)
+        const projectId = response.data.project.project_id
+
+        if (starterFile) {
+          await projectsAPI.uploadStarterFile(projectId, starterFile)
+        }
+
+        navigate(`/projects/${projectId}`)
       }
+
     } catch (err) {
       const errorData = err.response?.data
+
       if (errorData?.errors) {
-        setError(Array.isArray(errorData.errors) ? errorData.errors.join(', ') : errorData.errors)
+        setError(
+          Array.isArray(errorData.errors)
+            ? errorData.errors.join(', ')
+            : errorData.errors
+        )
       } else if (errorData?.message) {
         setError(errorData.message)
       } else {
@@ -220,6 +235,18 @@ const ProjectCreate = () => {
                 <option value="other">أخرى</option>
               </select>
             </div>
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="starter_file">ملف البداية (اختياري)</label>
+            <input
+              type="file"
+              id="starter_file"
+              onChange={(e) => setStarterFile(e.target.files[0])}
+            />
+            <small className="input-hint">
+              يمكنك رفع ملف يحتوي على كود مبدئي للمشروع
+            </small>
           </div>
 
           <div className="form-row">

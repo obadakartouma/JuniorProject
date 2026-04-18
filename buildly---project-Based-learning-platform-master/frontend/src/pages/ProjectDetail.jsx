@@ -123,6 +123,33 @@ const ProjectDetail = () => {
               <p>{project.resources}</p>
             </div>
           )}
+
+          {project.starter_file && (
+            <div className="card">
+              <h2>ملف البداية</h2>
+
+              <div className="starter-file-single">
+
+                <div className="file-info">
+                  <span className="file-icon">📄</span>
+                  <span className="file-name">
+                    {project.starter_file.file_name}
+                  </span>
+                </div>
+
+                <a
+                  href={project.starter_file.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary"
+                >
+                  تحميل الملف
+                </a>
+
+              </div>
+            </div>
+          )}
+
         </div>
 
         <div className="detail-sidebar">

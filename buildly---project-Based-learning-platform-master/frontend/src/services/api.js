@@ -151,6 +151,17 @@ export const projectsAPI = {
 
   getProgress: () =>
     api.get('/progress/projects/'),
+
+  uploadStarterFile: (projectId, file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    return api.post(`/projects/${projectId}/starter-file/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+  },
 }
 
 export default api

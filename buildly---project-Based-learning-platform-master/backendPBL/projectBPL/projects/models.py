@@ -162,3 +162,31 @@ class Project(models.Model):
         """الحصول على رابط المشروع"""
         from django.urls import reverse
         return reverse('projects:project-detail', kwargs={'pk': self.id})
+    
+    
+class ProjectStarterFile(models.Model):
+    """ملف البداية الخاص بالمشروع (Starter Code)"""
+
+    project = models.OneToOneField(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='starter_file',
+        verbose_name='المشروع'
+    )
+
+    file = models.FileField(
+        upload_to='project_starters/',
+        verbose_name='ملف البداية'
+    )
+
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    uploaded_by = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    def __str__(self):
+        return f"Starter File - {self.project.title}"

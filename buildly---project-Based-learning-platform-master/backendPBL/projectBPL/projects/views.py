@@ -7,10 +7,11 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from .models import Project
-from .serializers import ProjectCreateSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectUpdateSerializer, ProjectDeleteConfirmationSerializer
+from .models import Project, ProjectStarterFile
+from .serializers import ProjectCreateSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectUpdateSerializer, ProjectDeleteConfirmationSerializer, ProjectStarterFileSerializer
 from courses.models import Course
 from progress.models import ProjectProgress
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class IsCourseInstructor(permissions.BasePermission):
@@ -190,7 +191,7 @@ class ProjectDetailView(generics.RetrieveAPIView):
     
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance)
+        serializer = self.get_serializer(instance, context={'request': request})
         
         return Response({
             'success': True,
@@ -629,6 +630,49 @@ class StartProjectView(APIView):
         
 
 
+class UploadStarterFileView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
+    parser_classes = [MultiPartParser, FormParser]
 
+    def post(self, request, pk):
+        try:
+            project = Project.objects.get(id=pk, is_active=True)
 
+            file = request.FILES.get('file')
+
+            if not file:
+                return Response({
+                    'success': False,
+                    'message': _('لم يتم إرسال أي ملف')
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            starter, created = ProjectStarterFile.objects.update_or_create(
+                project=project,
+                defaults={
+                    'file': file,
+                    'uploaded_by': request.user
+                }
+            )
+
+            return Response({
+                'success': True,
+                'message': _('تم رفع ملف البداية بنجاح'),
+                'file': {
+                    'url': starter.file.url,
+                    'uploaded_at': starter.uploaded_at
+                }
+            })
+
+        except Project.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': _('المشروع غير موجود')
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': _('حدث خطأ أثناء رفع الملف'),
+                'error': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

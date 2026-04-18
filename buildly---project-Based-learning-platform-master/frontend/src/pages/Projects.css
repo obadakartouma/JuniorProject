@@ -123,3 +123,31 @@
 .filter-select:hover {
   border-color: var(--primary-color);
 }
+
+.starter-file-single {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.file-icon {
+  font-size: 18px;
+}
+
+.file-name {
+  font-size: 14px;
+  color: var(--text-primary);
+  word-break: break-all;
+  font-weight: 500;
+}

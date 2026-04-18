@@ -9,6 +9,7 @@ from .views import (
     DeleteProjectView,
     ConfirmDeleteProjectView,  # ⭐ إضافة الاستيراد
     StartProjectView,
+    UploadStarterFileView,
     
 )
 
@@ -23,6 +24,6 @@ urlpatterns = [
     path('<int:pk>/', ProjectDetailView.as_view(), name='project-detail'),
     path('course/<int:course_id>/', CourseProjectsView.as_view(), name='course-projects'),
     path('<int:pk>/start/', StartProjectView.as_view(), name='start-project'),
-
+    path('<int:pk>/starter-file/', UploadStarterFileView.as_view(), name='upload-starter-file'),
 
 ]
