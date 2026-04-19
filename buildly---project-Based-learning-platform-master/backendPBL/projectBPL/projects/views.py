@@ -567,19 +567,44 @@ class StartProjectView(APIView):
                 project=project
             )
             
-            # 3.5 تحقق: هل لديه مشروع قيد التنفيذ؟
-            active_project = ProjectProgress.objects.filter(
+            previous_projects = Project.objects.filter(
+                course=project.course,
+                order__lt=project.order,
+                is_active=True
+            )
+
+            incomplete_previous = ProjectProgress.objects.filter(
                 user=request.user,
-                status='in_progress'
-            ).exclude(project=project).first()
-            
-            if active_project:
+                project__in=previous_projects
+            ).exclude(status='completed').select_related('project').order_by('project__order').first()
+
+            if not incomplete_previous:
+                started_project_ids = ProjectProgress.objects.filter(
+                    user=request.user,
+                    project__in=previous_projects
+                ).values_list('project_id', flat=True)
+
+                not_started_projects = previous_projects.exclude(id__in=started_project_ids).order_by('order').first()
+
+                if not_started_projects:
+                    return Response({
+                        'success': False,
+                        'message': _('يجب إكمال المشاريع السابقة أولاً'),
+                        'required_project': {
+                            'id': not_started_projects.id,
+                            'title': not_started_projects.title,
+                            'order': not_started_projects.order,
+                        }
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+            else:
                 return Response({
                     'success': False,
-                    'message': _('❗ لديك مشروع قيد التنفيذ. يرجى إنهاؤه أولاً قبل بدء مشروع جديد.'),
-                    'active_project': {
-                        'id': active_project.project.id,
-                        'title': active_project.project.title,
+                    'message': _('يجب إكمال المشاريع السابقة أولاً'),
+                    'required_project': {
+                        'id': incomplete_previous.project.id,
+                        'title': incomplete_previous.project.title,
+                        'order': incomplete_previous.project.order,
                     }
                 }, status=status.HTTP_400_BAD_REQUEST)
 

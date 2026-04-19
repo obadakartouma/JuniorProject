@@ -109,6 +109,7 @@
   cursor: not-allowed;
 }
 
-.monaco-editor * {
-  color: inherit;
+.task-body .monaco-editor {
+  direction: ltr !important;
 }
+

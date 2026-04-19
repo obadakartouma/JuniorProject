@@ -120,6 +120,8 @@ const ProjectWork = () => {
                                     automaticLayout: true,
                                     renderWhitespace: "all",
                                     colorDecorators: true,
+                                    fixedOverflowWidgets: true,
+                                    suggestWidgetFixed: true
                                 }}
                             />
                         </div>
