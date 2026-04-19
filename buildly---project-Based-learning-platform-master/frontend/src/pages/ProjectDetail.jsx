@@ -37,7 +37,7 @@ const ProjectDetail = () => {
 
       const response = await projectsAPI.start(id)
 
-      alert(response.data?.message || 'تم بدء المشروع بنجاح!')
+      navigate(`/projects/${id}/work`)
     } catch (err) {
       const errorMsg =
         err.response?.data?.message ||

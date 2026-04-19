@@ -7,8 +7,8 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from .models import Project, ProjectStarterFile
-from .serializers import ProjectCreateSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectUpdateSerializer, ProjectDeleteConfirmationSerializer, ProjectStarterFileSerializer
+from .models import Project, ProjectStarterFile, ProjectTask
+from .serializers import ProjectCreateSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectTaskSerializer, ProjectUpdateSerializer, ProjectDeleteConfirmationSerializer, ProjectStarterFileSerializer
 from courses.models import Course
 from progress.models import ProjectProgress
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -676,3 +676,29 @@ class UploadStarterFileView(APIView):
                 'error': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class CreateProjectTaskView(generics.CreateAPIView):
+    queryset = ProjectTask.objects.all()
+    serializer_class = ProjectTaskSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
+
+    def perform_create(self, serializer):
+        project_id = self.request.data.get('project')
+
+        try:
+            project = Project.objects.get(id=project_id)
+        except Project.DoesNotExist:
+            raise ValidationError(_('المشروع غير موجود'))
+
+        serializer.save(project=project)
+        
+class ProjectTasksListView(generics.ListAPIView):
+    serializer_class = ProjectTaskSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        project_id = self.kwargs.get('project_id')
+
+        return ProjectTask.objects.filter(
+            project_id=project_id
+        ).order_by('order')

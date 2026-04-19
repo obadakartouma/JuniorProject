@@ -1,10 +1,12 @@
 # projects/urls.py
 from django.urls import path
 from .views import (
+    CreateProjectTaskView,
     CreateProjectView,
     ListProjectsView,
     ProjectDetailView,
     CourseProjectsView,
+    ProjectTasksListView,
     UpdateProjectView,
     DeleteProjectView,
     ConfirmDeleteProjectView,  # ⭐ إضافة الاستيراد
@@ -25,5 +27,6 @@ urlpatterns = [
     path('course/<int:course_id>/', CourseProjectsView.as_view(), name='course-projects'),
     path('<int:pk>/start/', StartProjectView.as_view(), name='start-project'),
     path('<int:pk>/starter-file/', UploadStarterFileView.as_view(), name='upload-starter-file'),
-
+    path('tasks/create/', CreateProjectTaskView.as_view(), name='create-task'),
+    path('<int:project_id>/tasks/', ProjectTasksListView.as_view(), name='project-tasks'),
 ]

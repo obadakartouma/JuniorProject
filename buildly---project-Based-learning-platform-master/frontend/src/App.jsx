@@ -19,6 +19,7 @@ import ProjectEdit from './pages/ProjectEdit'
 import Profile from './pages/Profile'
 import MyCourses from './pages/MyCourses'
 import './App.css'
+import ProjectWork from './pages/ProjectWork'
 
 function App() {
   return (
@@ -31,7 +32,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              
+
               <Route
                 path="/dashboard"
                 element={
@@ -40,7 +41,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/admin/dashboard"
                 element={
@@ -49,7 +50,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/courses"
                 element={
@@ -58,7 +59,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/courses/create"
                 element={
@@ -67,7 +68,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/courses/:id"
                 element={
@@ -76,7 +77,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/courses/:id/edit"
                 element={
@@ -85,7 +86,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/my-courses"
                 element={
@@ -94,7 +95,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/projects"
                 element={
@@ -103,7 +104,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/projects/create"
                 element={
@@ -112,7 +113,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/projects/:id"
                 element={
@@ -121,7 +122,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/projects/:id/edit"
                 element={
@@ -130,7 +131,7 @@ function App() {
                   </PrivateRoute>
                 }
               />
-              
+
               <Route
                 path="/profile"
                 element={
@@ -139,6 +140,16 @@ function App() {
                   </PrivateRoute>
                 }
               />
+
+              <Route
+                path="/projects/:id/work"
+                element={
+                  <PrivateRoute>
+                    <ProjectWork />
+                  </PrivateRoute>
+                }
+              />
+
             </Routes>
           </main>
         </div>

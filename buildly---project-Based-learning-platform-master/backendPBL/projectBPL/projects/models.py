@@ -190,3 +190,63 @@ class ProjectStarterFile(models.Model):
 
     def __str__(self):
         return f"Starter File - {self.project.title}"
+    
+    
+class ProjectTask(models.Model):
+    """مراحل المشروع (Tasks)"""
+
+    TASK_TYPE_CHOICES = (
+        ('text', 'إجابة نصية'),
+        ('code', 'كود برمجي'),
+        ('file', 'رفع ملف'),
+    )
+
+    id = models.AutoField(primary_key=True)
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='tasks'
+    )
+
+    title = models.CharField(max_length=200)
+
+    description = models.TextField()
+
+    task_type = models.CharField(
+        max_length=20,
+        choices=TASK_TYPE_CHOICES,
+        default='text'
+    )
+
+    expected_answer = models.TextField(blank=True, null=True)
+
+    hint = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='تلميح'
+    )
+
+    teaching = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='شرح / درس مستفاد'
+    )
+
+    order = models.IntegerField(default=1)
+
+    is_required = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'order'],
+                name='unique_task_order_per_project'
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.project.title} - Task {self.order}"

@@ -162,6 +162,12 @@ export const projectsAPI = {
       },
     })
   },
+
+  createTask: (data) =>
+    api.post('/projects/tasks/create/', data),
+
+  getTasks: (projectId) =>
+    api.get(`/projects/${projectId}/tasks/`),
 }
 
 export default api

@@ -165,32 +165,23 @@ const ProjectsList = () => {
 
   return (
     <div className="container">
-      <div className="page-header">
-        <h1>المشاريع التعليمية</h1>
-        <div className="filters-bar">
-          <select
-            value={levelFilter}
-            onChange={(e) => setLevelFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="all">جميع المستويات</option>
-            <option value="beginner">مبتدئ</option>
-            <option value="intermediate">متوسط</option>
-            <option value="advanced">متقدم</option>
-            <option value="expert">خبير</option>
-          </select>
-        </div>
-        {isAdmin && (
-          <Link to="/projects/create" className="btn btn-primary">
-            إضافة مشروع جديد
-          </Link>
-        )}
-      </div>
 
       <div className="container">
         <div className="page-header">
           <h1>المشاريع التعليمية</h1>
-
+          <div className="filters-bar">
+            <select
+              value={levelFilter}
+              onChange={(e) => setLevelFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">جميع المستويات</option>
+              <option value="beginner">مبتدئ</option>
+              <option value="intermediate">متوسط</option>
+              <option value="advanced">متقدم</option>
+              <option value="expert">خبير</option>
+            </select>
+          </div>
           {isAdmin && (
             <Link to="/projects/create" className="btn btn-primary">
               إضافة مشروع جديد

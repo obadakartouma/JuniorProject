@@ -1,7 +1,7 @@
 # projects/serializers.py
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
-from .models import Project, ProjectStarterFile
+from .models import Project, ProjectStarterFile, ProjectTask
 from courses.models import Course
 
 
@@ -387,3 +387,21 @@ class ProjectStarterFileSerializer(serializers.ModelSerializer):
 
     def get_file_name(self, obj):
         return obj.file.name.split('/')[-1]
+    
+    
+class ProjectTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectTask
+        fields = [
+            'id',
+            'project',
+            'title',
+            'description',
+            'task_type',
+            'expected_answer',
+            'hint',
+            'teaching',
+            'order',
+            'is_required',
+            'created_at'
+        ]
