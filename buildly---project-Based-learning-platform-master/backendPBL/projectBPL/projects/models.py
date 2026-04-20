@@ -250,3 +250,39 @@ class ProjectTask(models.Model):
 
     def __str__(self):
         return f"{self.project.title} - Task {self.order}"
+    
+    
+class TaskSubmission(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    task = models.ForeignKey(ProjectTask, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    answer = models.TextField(blank=True)
+
+    STATUS_CHOICES = (
+        ('in_progress', 'In Bearbeitung'),
+        ('completed', 'Abgeschlossen'),
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='in_progress'
+    )
+
+    is_completed = models.BooleanField(default=False)
+
+    admin_feedback = models.TextField(blank=True, null=True)
+
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    is_correct = models.BooleanField(null=True, blank=True)
+
+    last_saved_at = models.DateTimeField(auto_now=True)
+
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'task')

@@ -3,10 +3,13 @@ from django.urls import path
 from .views import (
     CreateProjectTaskView,
     CreateProjectView,
+    ExecuteCodeView,
+    GetTaskSubmissionView,
     ListProjectsView,
     ProjectDetailView,
     CourseProjectsView,
     ProjectTasksListView,
+    SaveTaskSubmissionView,
     UpdateProjectView,
     DeleteProjectView,
     ConfirmDeleteProjectView,  # ⭐ إضافة الاستيراد
@@ -29,4 +32,7 @@ urlpatterns = [
     path('<int:pk>/starter-file/', UploadStarterFileView.as_view(), name='upload-starter-file'),
     path('tasks/create/', CreateProjectTaskView.as_view(), name='create-task'),
     path('<int:project_id>/tasks/', ProjectTasksListView.as_view(), name='project-tasks'),
+    path('code/execute/', ExecuteCodeView.as_view(), name='execute-code'),
+    path('tasks/<int:task_id>/save/', SaveTaskSubmissionView.as_view(), name='save-task-progress'),
+    path('tasks/<int:task_id>/get/', GetTaskSubmissionView.as_view(), name='get-task-progress'),
 ]

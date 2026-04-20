@@ -7,8 +7,8 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from .models import Project, ProjectStarterFile, ProjectTask
-from .serializers import ProjectCreateSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectTaskSerializer, ProjectUpdateSerializer, ProjectDeleteConfirmationSerializer, ProjectStarterFileSerializer
+from .models import Project, ProjectStarterFile, ProjectTask, TaskSubmission
+from .serializers import ProjectCreateSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectTaskSerializer, ProjectUpdateSerializer, ProjectDeleteConfirmationSerializer, ProjectStarterFileSerializer, TaskSubmissionSerializer
 from courses.models import Course
 from progress.models import ProjectProgress
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -727,3 +727,138 @@ class ProjectTasksListView(generics.ListAPIView):
         return ProjectTask.objects.filter(
             project_id=project_id
         ).order_by('order')
+        
+        
+import subprocess
+import tempfile
+import os
+import pathlib
+
+class ExecuteCodeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        code = request.data.get("code")
+        language = request.data.get("language", "python")
+
+        if not code:
+            return Response({"error": "No code provided"}, status=400)
+
+        try:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                file_path = os.path.join(tmpdir, "main.py")
+
+                # Save code to file
+                with open(file_path, "w") as f:
+                    f.write(code)
+
+                tmpdir_path = pathlib.Path(tmpdir).resolve()
+                docker_path = tmpdir_path.as_posix()
+                # Run Docker container
+                result = subprocess.run(
+                    [
+                        "docker", "run", "--rm",
+                        "-v", f"{docker_path}:/app",
+                        "--network", "none",          # ❗ no internet
+                        "--memory", "100m",           # ❗ limit RAM
+                        "--cpus", "0.5",              # ❗ limit CPU
+                        "python-runner-image"
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=5  # ❗ kill infinite loops
+                )
+
+                return Response({
+                    "stdout": result.stdout,
+                    "stderr": result.stderr,
+                    "returncode": result.returncode
+                })
+
+        except subprocess.TimeoutExpired:
+            return Response({
+                "error": "Execution timeout"
+            }, status=400)
+
+        except Exception as e:
+            return Response({
+                "error": str(e)
+            }, status=500)
+            
+            
+
+class SaveTaskSubmissionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, task_id):
+        try:
+            task = ProjectTask.objects.get(id=task_id)
+
+            progress, created = TaskSubmission.objects.get_or_create(
+                user=request.user,
+                task=task,
+                defaults={'project': task.project}
+            )
+
+            answer = request.data.get('answer', '')
+            status = request.data.get('status', 'in_progress')
+
+            progress.answer = answer
+            progress.status = status
+
+            # Completion Logic
+            if status == 'completed':
+                progress.is_completed = True
+                progress.completed_at = timezone.now()
+            else:
+                progress.is_completed = False
+                progress.completed_at = None
+
+            progress.save()
+
+            return Response({
+                'success': True,
+                'message': _('تم حفظ التقدم بنجاح'),
+                'progress': {
+                    'task_id': task.id,
+                    'status': progress.status,
+                    'is_completed': progress.is_completed,
+                    'last_saved_at': progress.last_saved_at,
+                    'completed_at': progress.completed_at,
+                }
+            })
+
+        except ProjectTask.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': _('المهمة غير موجودة')
+            }, status=404)
+
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': _('خطأ أثناء الحفظ'),
+                'error': str(e)
+            }, status=500)
+            
+            
+class GetTaskSubmissionView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, task_id):
+        try:
+            progress = TaskSubmission.objects.get(
+                user=request.user,
+                task_id=task_id
+            )
+
+            return Response({
+                'success': True,
+                'progress': TaskSubmissionSerializer(progress).data
+            })
+
+        except TaskSubmission.DoesNotExist:
+            return Response({
+                'success': True,
+                'progress': None
+            })

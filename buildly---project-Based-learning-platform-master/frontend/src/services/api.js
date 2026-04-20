@@ -168,6 +168,18 @@ export const projectsAPI = {
 
   getTasks: (projectId) =>
     api.get(`/projects/${projectId}/tasks/`),
+
+  executeCode: (code, language) =>
+    api.post('/projects/code/execute/', {
+      code,
+      language,
+    }),
+
+  saveTaskSubmission: (taskId, data) =>
+    api.post(`/projects/tasks/${taskId}/save/`, data),
+
+  getTaskSubmission: (taskId) =>
+    api.get(`/projects/tasks/${taskId}/get/`),
 }
 
 export default api

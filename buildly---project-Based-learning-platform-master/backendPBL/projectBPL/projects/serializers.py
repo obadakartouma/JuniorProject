@@ -1,7 +1,7 @@
 # projects/serializers.py
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
-from .models import Project, ProjectStarterFile, ProjectTask
+from .models import Project, ProjectStarterFile, ProjectTask, TaskSubmission
 from courses.models import Course
 
 
@@ -404,4 +404,29 @@ class ProjectTaskSerializer(serializers.ModelSerializer):
             'order',
             'is_required',
             'created_at'
+        ]
+           
+
+class TaskSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TaskSubmission
+        fields = [
+            'id',
+            'task',
+            'project',
+            'answer',
+            'status',
+            'is_completed',
+            'admin_feedback',
+            'is_correct',
+            'reviewed_at',
+            'last_saved_at',
+            'completed_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'admin_feedback',
+            'reviewed_at',
+            'last_saved_at',
+            'updated_at',
         ]

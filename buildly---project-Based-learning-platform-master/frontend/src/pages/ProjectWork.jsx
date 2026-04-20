@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import Editor from '@monaco-editor/react'
 import { projectsAPI } from '../services/api'
@@ -16,10 +16,87 @@ const ProjectWork = () => {
     const [showHint, setShowHint] = useState(false)
 
     const [loading, setLoading] = useState(true)
+    const [output, setOutput] = useState('')
+    const [running, setRunning] = useState(false)
+    const [lastSaved, setLastSaved] = useState({ code: '', text: '' })
+    const [saving, setSaving] = useState(false)
+
+    const codeRef = useRef('')
+    const textRef = useRef('')
+
 
     useEffect(() => {
         fetchData()
     }, [id])
+
+    useEffect(() => {
+        if (!tasks.length) return
+
+        const interval = setInterval(() => {
+            const currentTask = tasks[currentIndex]
+            if (currentTask) {
+                saveTask(false)
+            }
+        }, 5000)
+
+        return () => clearInterval(interval)
+    }, [tasks, currentIndex])
+
+    useEffect(() => {
+        if (!tasks.length) return
+        const task = tasks[currentIndex]
+
+        const loadSubmission = async () => {
+            try {
+                const res = await projectsAPI.getTaskSubmission(task.id)
+                if (task.task_type === 'code') {
+                    setCode(res.data.progress.answer || '')
+                } else if (task.task_type === 'text') {
+                    setTextAnswer(res.data.progress.answer || '')
+                }
+
+            } catch (err) {
+
+            }
+        }
+
+        loadSubmission()
+    }, [tasks, currentIndex])
+
+    const saveTask = async () => {
+        const currentTask = tasks[currentIndex]
+        if (!currentTask) return
+
+        try {
+            const value =
+                currentTask.task_type === 'code'
+                    ? codeRef.current
+                    : textRef.current
+
+            if (!value.trim()) return
+
+            await projectsAPI.saveTaskSubmission(currentTask.id, {
+                answer: value
+            })
+        } catch (err) {
+            console.error('Autosave error:', err)
+        }
+    }
+
+    const runCode = async () => {
+        setRunning(true)
+        try {
+            const res = await projectsAPI.executeCode(code, project.language)
+
+            setOutput(
+                res.data.stdout || res.data.stderr || 'No output'
+            )
+        } catch (err) {
+            setOutput('Error running code')
+        } finally {
+            setRunning(false)
+        }
+    }
 
     const fetchData = async () => {
         try {
@@ -53,22 +130,24 @@ const ProjectWork = () => {
         return false
     }
 
-    const handleNext = () => {
-        if (!isTaskCompleted()) return
-
-        setCode('')
-        setTextAnswer('')
-        setShowHint(false)
-
-        setCurrentIndex((prev) => Math.min(prev + 1, tasks.length - 1))
-    }
-
     const handlePrev = () => {
         setCode('')
         setTextAnswer('')
         setShowHint(false)
 
         setCurrentIndex((prev) => Math.max(prev - 1, 0))
+    }
+
+    const handleNext = async () => {
+        if (!isTaskCompleted()) return
+
+        await saveTask()
+
+        setCode('')
+        setTextAnswer('')
+        setShowHint(false)
+
+        setCurrentIndex((prev) => Math.min(prev + 1, tasks.length - 1))
     }
 
     if (loading) return <div className="loading">Loading...</div>
@@ -107,23 +186,41 @@ const ProjectWork = () => {
 
                 <div className="task-body">
                     {task?.task_type === 'code' && (
-                        <div style={{ height: '400px', width: '100%', direction: 'ltr' }}>
-                            <Editor
-                                height="400px"
-                                language="javascript"
-                                value={code}
-                                onChange={(v) => setCode(v || '')}
-                                theme="vs"
-                                options={{
-                                    minimap: { enabled: false },
-                                    fontSize: 14,
-                                    automaticLayout: true,
-                                    renderWhitespace: "all",
-                                    colorDecorators: true,
-                                    fixedOverflowWidgets: true,
-                                    suggestWidgetFixed: true
-                                }}
-                            />
+                        <div className="code-editor-container">
+                            <div className="monaco-wrapper">
+                                <Editor
+                                    height="400px"
+                                    language={project.language || "javascript"}
+                                    value={code}
+                                    onChange={(v) => {
+                                        codeRef.current = v || ''
+                                        setCode(v || '')
+                                    }}
+                                    theme="vs-dark"
+                                    options={{
+                                        minimap: { enabled: false },
+                                        fontSize: 14,
+                                        automaticLayout: true,
+                                        renderWhitespace: "all",
+                                        colorDecorators: true,
+                                        fixedOverflowWidgets: true,
+                                        suggestWidgetFixed: true
+                                    }}
+                                />
+                            </div>
+
+                            <div className="editor-actions">
+                                <button className="btn btn-success" onClick={runCode} disabled={running}>
+                                    {running ? '⏳ Running...' : '▶ تشغيل الكود'}
+                                </button>
+                            </div>
+
+                            {output && (
+                                <div className="output-section">
+                                    <small style={{ color: 'var(--text-secondary)', marginBottom: '5px', display: 'block' }}>Output:</small>
+                                    <pre className="output-box">{output}</pre>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -131,7 +228,10 @@ const ProjectWork = () => {
                         <textarea
                             className="text-input"
                             value={textAnswer}
-                            onChange={(e) => setTextAnswer(e.target.value)}
+                            onChange={(e) => {
+                                textRef.current = e.target.value
+                                setTextAnswer(e.target.value)
+                            }}
                             placeholder="اكتب إجابتك هنا..."
                         />
                     )}
