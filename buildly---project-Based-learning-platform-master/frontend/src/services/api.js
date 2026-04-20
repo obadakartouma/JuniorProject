@@ -183,6 +183,9 @@ export const projectsAPI = {
 
   complete: (id) =>
     api.post(`/progress/projects/${id}/complete/`),
+
+  getProjectProgress: (projectId) =>
+    api.get(`/progress/projects/${projectId}/progress/`),
 }
 
 export default api

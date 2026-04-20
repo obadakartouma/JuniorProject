@@ -13,6 +13,7 @@ const ProjectDetail = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [starting, setStarting] = useState(false)
+  const [progress, setProgress] = useState(null)
 
   useEffect(() => {
     fetchProjectDetails()
@@ -23,6 +24,14 @@ const ProjectDetail = () => {
       setLoading(true)
       const response = await projectsAPI.get(id)
       setProject(response.data.project)
+      if (isLearner) {
+        try {
+          const progRes = await projectsAPI.getProjectProgress(id)
+          setProgress(progRes.data)
+        } catch (e) {
+          setProgress(null)
+        }
+      }
     } catch (err) {
       setError('فشل تحميل تفاصيل المشروع')
       console.error(err)
@@ -61,6 +70,14 @@ const ProjectDetail = () => {
     } catch (err) {
       alert('فشل حذف المشروع')
     }
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '-'
+    return new Date(dateString).toLocaleString('ar-EG', {
+      year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    })
   }
 
   if (loading) {
@@ -180,16 +197,51 @@ const ProjectDetail = () => {
           </div>
 
           {isLearner && (
-            <div className="card">
-              <button
-                onClick={handleStart}
-                className="btn btn-primary"
-                disabled={starting}
-                style={{ width: '100%' }}
-              >
-                {starting ? 'جاري البدء...' : 'بدء المشروع'}
-              </button>
-            </div>
+            <>
+              {/* Statistiken Card */}
+              {progress && (
+                <div className="card stats-card">
+                  <h3>إحصائيات الإنجاز</h3>
+                  <div className="info-list">
+                    <div className="info-item">
+                      <span className="info-label">حالة المشروع:</span>
+                      <span className={`status-badge ${progress.status}`}>
+                        {progress.status === 'completed' ? 'مكتمل' : 'قيد التنفيذ'}
+                      </span>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">وقت البدء:</span>
+                      <span className="info-value">{formatDate(progress.started_at)}</span>
+                    </div>
+                    {progress.completed_at && (
+                      <>
+                        <div className="info-item">
+                          <span className="info-label">وقت الإنجاز:</span>
+                          <span className="info-value">{formatDate(progress.completed_at)}</span>
+                        </div>
+                        <div className="info-item">
+                          <span className="info-label">المستغرق:</span>
+                          <span className="info-value">{progress.duration_minutes} دقيقة</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="card">
+                <button
+                  onClick={handleStart}
+                  className="btn btn-primary"
+                  disabled={starting || progress?.status === 'completed'}
+                  style={{ width: '100%' }}
+                >
+                  {starting ? 'جاري البدء...' :
+                    progress?.status === 'completed' ? 'مراجعة المشروع' :
+                      progress ? 'مواصلة العمل' : 'بدء المشروع'}
+                </button>
+              </div>
+            </>
           )}
 
           {isAdmin && (
