@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import Editor from '@monaco-editor/react'
 import { projectsAPI } from '../services/api'
 import './ProjectWork.css'
 
 const ProjectWork = () => {
     const { id } = useParams()
+    const navigate = useNavigate()
 
     const [project, setProject] = useState(null)
     const [tasks, setTasks] = useState([])
@@ -24,6 +25,7 @@ const ProjectWork = () => {
     const codeRef = useRef('')
     const textRef = useRef('')
 
+    const isLastTask = currentIndex === tasks.length - 1
 
     useEffect(() => {
         fetchData()
@@ -150,6 +152,24 @@ const ProjectWork = () => {
         setCurrentIndex((prev) => Math.min(prev + 1, tasks.length - 1))
     }
 
+    const handleFinish = async () => {
+        if (!isTaskCompleted()) return
+
+        try {
+            await saveTask()
+            await projectsAPI.complete(id)
+            alert('🎉 تم إكمال المشروع بنجاح!')
+            navigate('/projects')
+        } catch (err) {
+            console.error('Error completing project:', err)
+            alert('حدث خطأ أثناء الحفظ.')
+        }
+    }
+
+    const progressPercentage = tasks.length > 0
+        ? Math.round(((currentIndex + 1) / tasks.length) * 100)
+        : 0;
+
     if (loading) return <div className="loading">Loading...</div>
     if (!project) return <div>Project not found</div>
 
@@ -174,6 +194,19 @@ const ProjectWork = () => {
 
             {/* MAIN */}
             <div className="main">
+
+                <div className="progress-container">
+                    <div className="progress-label">
+                        <span>نسبة الإنجاز</span>
+                        <span>{progressPercentage}%</span>
+                    </div>
+                    <div className="progress-bar-bg">
+                        <div
+                            className="progress-bar-fill"
+                            style={{ width: `${progressPercentage}%` }}
+                        ></div>
+                    </div>
+                </div>
 
                 <div className="task-header">
                     <h2>{task?.title}</h2>
@@ -265,13 +298,23 @@ const ProjectWork = () => {
                         السابق
                     </button>
 
-                    <button
-                        className="btn btn-primary"
-                        onClick={handleNext}
-                        disabled={!isTaskCompleted()}
-                    >
-                        التالي
-                    </button>
+                    {isLastTask ? (
+                        <button
+                            className="btn btn-success"
+                            onClick={handleFinish}
+                            disabled={!isTaskCompleted()}
+                        >
+                            تسليم المشروع
+                        </button>
+                    ) : (
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleNext}
+                            disabled={!isTaskCompleted()}
+                        >
+                            التالي
+                        </button>
+                    )}
 
                 </div>
 

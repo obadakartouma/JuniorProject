@@ -180,6 +180,9 @@ export const projectsAPI = {
 
   getTaskSubmission: (taskId) =>
     api.get(`/projects/tasks/${taskId}/get/`),
+
+  complete: (id) =>
+    api.post(`/progress/projects/${id}/complete/`),
 }
 
 export default api

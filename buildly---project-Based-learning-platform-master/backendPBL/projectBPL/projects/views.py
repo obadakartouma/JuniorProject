@@ -566,6 +566,13 @@ class StartProjectView(APIView):
                 user=request.user,
                 project=project
             )
+
+            if progress.status == 'completed':
+                return Response({
+                    'success': False,
+                    'message': _('لا يمكنك بدء هذا المشروع لأنه مكتمل بالفعل'),
+                    'status': 'completed'
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             previous_projects = Project.objects.filter(
                 course=project.course,
