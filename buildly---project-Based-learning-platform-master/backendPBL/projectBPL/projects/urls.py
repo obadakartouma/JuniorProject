@@ -8,6 +8,7 @@ from .views import (
     ListProjectsView,
     ProjectDetailView,
     CourseProjectsView,
+    ProjectTaskDeleteView,
     ProjectTasksListView,
     SaveTaskSubmissionView,
     UpdateProjectView,
@@ -34,5 +35,6 @@ urlpatterns = [
     path('<int:project_id>/tasks/', ProjectTasksListView.as_view(), name='project-tasks'),
     path('code/execute/', ExecuteCodeView.as_view(), name='execute-code'),
     path('tasks/<int:task_id>/save/', SaveTaskSubmissionView.as_view(), name='save-task-progress'),
-    path('tasks/<int:task_id>/get/', GetTaskSubmissionView.as_view(), name='get-task-progress'),
+    path('tasks/<int:task_id>/get/', GetTaskSubmissionView.as_view(), name='get-task'),
+    path('tasks/<int:id>/delete/', ProjectTaskDeleteView.as_view(), name='delete-task'),
 ]

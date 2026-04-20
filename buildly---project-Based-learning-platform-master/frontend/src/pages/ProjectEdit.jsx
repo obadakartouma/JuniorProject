@@ -20,6 +20,16 @@ const ProjectEdit = () => {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [tasks, setTasks] = useState([])
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    task_type: 'text',
+    expected_answer: '',
+    hint: '',
+    teaching: '',
+  });
 
   useEffect(() => {
     fetchProject()
@@ -41,6 +51,9 @@ const ProjectEdit = () => {
         language: project.language,
         order: project.order || '',
       })
+
+      const tasksResponse = await projectsAPI.getTasks(id)
+      setTasks(tasksResponse.data || [])
     } catch (err) {
       setError('فشل تحميل بيانات المشروع')
     } finally {
@@ -55,6 +68,45 @@ const ProjectEdit = () => {
       [name]: value,
     })
     setError('')
+  }
+
+  const handleAddTask = async () => {
+    try {
+      const taskToSave = {
+        ...newTask,
+        project: id,
+        order: tasks.length + 1,
+      };
+
+      await projectsAPI.createTask(taskToSave);
+
+      const tasksResponse = await projectsAPI.getTasks(id);
+      setTasks(tasksResponse.data || []);
+
+      setNewTask({
+        title: '',
+        description: '',
+        task_type: 'text',
+        expected_answer: '',
+        hint: '',
+        teaching: '',
+      });
+      setShowTaskModal(false);
+    } catch (err) {
+      console.error("Error creating task:", err);
+      alert('حدث خطأ أثناء إضافة المهمة');
+    }
+  };
+
+  const handleRemoveTask = async (taskId) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه المهمة؟')) return
+
+    try {
+      await projectsAPI.deleteTask(taskId)
+      setTasks(tasks.filter(t => t.id !== taskId))
+    } catch (err) {
+      alert('فشل حذف المهمة')
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -73,7 +125,7 @@ const ProjectEdit = () => {
     } catch (err) {
       const errorData = err.response?.data
       console.error('Error updating project:', err.response?.data || err.message)
-      
+
       if (errorData?.message) {
         setError(errorData.message)
       } else if (errorData?.errors) {
@@ -82,7 +134,7 @@ const ProjectEdit = () => {
           const fieldErrors = Object.entries(errorData.errors)
             .map(([field, messages]) => {
               const fieldName = field === 'non_field_errors' ? '' : `${field}: `
-              return Array.isArray(messages) 
+              return Array.isArray(messages)
                 ? `${fieldName}${messages.join(', ')}`
                 : `${fieldName}${messages}`
             })
@@ -221,6 +273,122 @@ const ProjectEdit = () => {
                 <option value="other">أخرى</option>
               </select>
             </div>
+          </div>
+
+          <div className="tasks-section">
+            <div className="tasks-header">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowTaskModal(true)}
+              >
+                ➕ إضافة مهمة جديدة
+              </button>
+            </div>
+
+            <div className="tasks-section">
+              <h2>مهام المشروع (Tasks)</h2>
+              <div className="tasks-list">
+                {tasks.length === 0 && <p>لا يوجد مهام حالياً</p>}
+                {tasks.map((task, index) => (
+                  <div key={task.id} className="task-card">
+                    <div className="task-header">
+                      <strong>{index + 1}. {task.title}</strong>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTask(task.id)} // Nutze die Datenbank-ID
+                        className="btn btn-danger btn-sm"
+                      >
+                        حذف
+                      </button>
+                    </div>
+
+                    <p>{task.description}</p>
+
+                    <div className="task-meta">
+                      <span>نوع المهمة: {task.task_type}</span>
+                      <span style={{ marginRight: '15px' }}>الترتيب: {task.order}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+
+            {showTaskModal && (
+              <div className="modal-overlay">
+                <div className="modal">
+
+                  <h3>إضافة مهمة جديدة</h3>
+
+                  <input
+                    type="text"
+                    placeholder="عنوان المهمة"
+                    value={newTask.title}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, title: e.target.value })
+                    }
+                  />
+
+                  <textarea
+                    placeholder="وصف المهمة"
+                    value={newTask.description}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, description: e.target.value })
+                    }
+                  />
+
+                  <select
+                    value={newTask.task_type}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, task_type: e.target.value })
+                    }
+                  >
+                    <option value="text">نص</option>
+                    <option value="code">كود</option>
+                    <option value="file">ملف</option>
+                  </select>
+
+                  <textarea
+                    placeholder="الإجابة المتوقعة"
+                    value={newTask.expected_answer}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, expected_answer: e.target.value })
+                    }
+                  />
+
+                  <textarea
+                    placeholder="تلميح"
+                    value={newTask.hint}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, hint: e.target.value })
+                    }
+                  />
+
+                  <textarea
+                    placeholder="شرح / teaching"
+                    value={newTask.teaching}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, teaching: e.target.value })
+                    }
+                  />
+
+                  <div className="modal-actions">
+                    <button type="button" onClick={handleAddTask} className="btn btn-primary">
+                      حفظ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowTaskModal(false)}
+                      className="btn btn-secondary"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="form-row">

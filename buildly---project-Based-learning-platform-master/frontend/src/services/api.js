@@ -186,6 +186,9 @@ export const projectsAPI = {
 
   getProjectProgress: (projectId) =>
     api.get(`/progress/projects/${projectId}/progress/`),
+
+  deleteTask: (taskId) =>
+    api.delete(`/projects/tasks/${taskId}/delete/`),
 }
 
 export default api

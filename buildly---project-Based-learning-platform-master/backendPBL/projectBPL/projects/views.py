@@ -12,6 +12,10 @@ from .serializers import ProjectCreateSerializer, ProjectListSerializer, Project
 from courses.models import Course
 from progress.models import ProjectProgress
 from rest_framework.parsers import MultiPartParser, FormParser
+import subprocess
+import tempfile
+import os
+import pathlib
 
 
 class IsCourseInstructor(permissions.BasePermission):
@@ -734,12 +738,14 @@ class ProjectTasksListView(generics.ListAPIView):
         return ProjectTask.objects.filter(
             project_id=project_id
         ).order_by('order')
+    
+
+class ProjectTaskDeleteView(generics.DestroyAPIView):
+    queryset = ProjectTask.objects.all()
+    serializer_class = ProjectTaskSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
+    lookup_field = 'id'
         
-        
-import subprocess
-import tempfile
-import os
-import pathlib
 
 class ExecuteCodeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
