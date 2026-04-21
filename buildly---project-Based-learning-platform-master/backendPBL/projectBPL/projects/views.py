@@ -12,6 +12,9 @@ from .serializers import ProjectCreateSerializer, ProjectListSerializer, Project
 from courses.models import Course
 from progress.models import ProjectProgress
 from rest_framework.parsers import MultiPartParser, FormParser
+from reversion.views import RevisionMixin
+import reversion
+from reversion.models import Version
 import subprocess
 import tempfile
 import os
@@ -44,7 +47,7 @@ class IsCourseInstructor(permissions.BasePermission):
         return True
 
 
-class CreateProjectView(generics.CreateAPIView):
+class CreateProjectView(RevisionMixin, generics.CreateAPIView):
     """واجهة إنشاء مشروع جديد"""
     
     queryset = Project.objects.all()
@@ -273,7 +276,7 @@ class CourseProjectsView(generics.ListAPIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
 
-class UpdateProjectView(generics.UpdateAPIView):
+class UpdateProjectView(RevisionMixin, generics.UpdateAPIView):
     """واجهة تعديل مشروع موجود (UC-05)"""
     
     queryset = Project.objects.filter(is_active=True)
@@ -453,13 +456,6 @@ class DeleteProjectView(generics.DestroyAPIView):
 
 
 
-
-# projects/views.py - إضافة في نهاية الملف بعد DeleteProjectView
-
-
-
-# projects/views.py - تحديث ConfirmDeleteProjectView
-
 class ConfirmDeleteProjectView(generics.RetrieveAPIView):
     """واجهة تأكيد حذف مشروع (UC-06 الخطوة 4)"""
     
@@ -525,11 +521,6 @@ class ConfirmDeleteProjectView(generics.RetrieveAPIView):
                 'error': str(e)
             }, status=status.HTTP_404_NOT_FOUND)
 
-
-
-
-
-# projects/views.py - أضف هذا في النهاية (بعد ConfirmDeleteProjectView)
 
 class StartProjectView(APIView):
     """واجهة بدء المشروع من قبل المتعلم (بدون نموذج تقدم)"""
@@ -665,7 +656,7 @@ class StartProjectView(APIView):
         
 
 
-class UploadStarterFileView(APIView):
+class UploadStarterFileView(RevisionMixin, APIView):
     permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
     parser_classes = [MultiPartParser, FormParser]
 
@@ -712,7 +703,7 @@ class UploadStarterFileView(APIView):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class CreateProjectTaskView(generics.CreateAPIView):
+class CreateProjectTaskView(RevisionMixin, generics.CreateAPIView):
     queryset = ProjectTask.objects.all()
     serializer_class = ProjectTaskSerializer
     permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
@@ -739,7 +730,7 @@ class ProjectTasksListView(generics.ListAPIView):
         ).order_by('order')
     
 
-class ProjectTaskDeleteView(generics.DestroyAPIView):
+class ProjectTaskDeleteView(RevisionMixin, generics.DestroyAPIView):
     queryset = ProjectTask.objects.all()
     serializer_class = ProjectTaskSerializer
     permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
@@ -919,3 +910,23 @@ class AdminGetStudentSubmissionView(APIView):
             'last_saved_at': submission.last_saved_at,
             'reviewed_at': submission.reviewed_at
         })
+
+class ProjectVersionHistoryView(APIView):
+    def get(self, request, project_id):
+        project = get_object_or_404(Project, pk=project_id)
+        versions = Version.objects.get_for_object(project)
+        
+        data = [{
+            'version_id': v.id,
+            'date': v.revision.date_created,
+            'user': v.revision.user.email if v.revision.user else "System",
+            'comment': v.revision.comment
+        } for v in versions]
+        
+        return Response(data)
+
+class ProjectRollbackView(APIView):
+    def get(self, request, project_id, version_id):
+        version = get_object_or_404(Version, id=version_id)
+        version.revision.revert() 
+        return Response({"message": "تم استعادة النسخة بنجاح"})

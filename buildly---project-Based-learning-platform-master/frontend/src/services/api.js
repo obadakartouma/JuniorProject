@@ -213,6 +213,12 @@ export const projectsAPI = {
 
   getSingleSubmission: (projectId, userId) => 
     api.get(`/progress/projects/${projectId}/review/${userId}/`),
+
+  getVersions: (projectId) =>
+    api.get(`/projects/versions/${projectId}/`),
+
+  rollback: (projectId, versionId) =>
+    api.get(`/projects/rollback/${projectId}/${versionId}/`),
 }
 
 export default api

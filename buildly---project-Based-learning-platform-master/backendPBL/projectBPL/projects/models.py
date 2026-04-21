@@ -3,7 +3,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from courses.models import Course
 from account.models import CustomUser
+import reversion
+from django.db import transaction
 
+@reversion.register()
 class Project(models.Model):
     """نموذج مشروع تعليمي"""
     
@@ -162,8 +165,9 @@ class Project(models.Model):
         """الحصول على رابط المشروع"""
         from django.urls import reverse
         return reverse('projects:project-detail', kwargs={'pk': self.id})
-    
-    
+
+
+@reversion.register(follow=["project"])
 class ProjectStarterFile(models.Model):
     """ملف البداية الخاص بالمشروع (Starter Code)"""
 
@@ -191,7 +195,8 @@ class ProjectStarterFile(models.Model):
     def __str__(self):
         return f"Starter File - {self.project.title}"
     
-    
+
+@reversion.register(follow=["project"])
 class ProjectTask(models.Model):
     """مراحل المشروع (Tasks)"""
 

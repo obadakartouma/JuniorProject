@@ -16,6 +16,8 @@ const ProjectDetail = () => {
   const [progress, setProgress] = useState(null)
   const [submissions, setSubmissions] = useState([])
   const [filterGraded, setFilterGraded] = useState('all')
+  const [versions, setVersions] = useState([]);
+  const [showVersions, setShowVersions] = useState(false);
 
   useEffect(() => {
     fetchProjectDetails()
@@ -59,6 +61,23 @@ const ProjectDetail = () => {
     if (filterGraded === 'ungraded') return !s.is_graded;
     return true;
   });
+
+  const fetchVersions = async () => {
+    try {
+      const res = await projectsAPI.getVersions(id);
+      setVersions(res.data);
+    } catch (err) { console.error("Error fetching versions"); }
+  };
+
+  const handleRollback = async (versionId) => {
+    if (window.confirm("هل أنت متأكد من العودة لهذه النسخة؟")) {
+      try {
+        await projectsAPI.rollback(id, versionId);
+        alert("تمت العودة للنسخة بنجاح");
+        fetchProjectDetails();
+      } catch (err) { alert("فشل العودة للنسخة"); }
+    }
+  };
 
   const handleStart = async () => {
     try {
@@ -324,6 +343,33 @@ const ProjectDetail = () => {
                 </button>
               </div>
             </>
+          )}
+
+          {isAdmin && (
+            <div className="card">
+              <h3 onClick={() => { setShowVersions(!showVersions); if (!showVersions) fetchVersions(); }}
+                style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}>
+                سجل التعديلات <span>{showVersions ? '▲' : '▼'}</span>
+              </h3>
+
+              {showVersions && (
+                <ul className="version-list" style={{ listStyle: 'none', padding: 0, marginTop: '10px' }}>
+                  {versions.map(v => (
+                    <li key={v.version_id} style={{ fontSize: '0.85rem', marginBottom: '10px', borderBottom: '1px solid #eee' }}>
+                      <strong>{formatDate(v.date)}</strong><br />
+                      <small>بواسطة: {v.user}</small><br />
+                      <button
+                        onClick={() => handleRollback(v.version_id)}
+                        className="btn btn-secondary btn-sm"
+                        style={{ padding: '2px 8px', fontSize: '0.7rem' }}
+                      >
+                        استعادة هذه النسخة
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
 
           {isAdmin && (

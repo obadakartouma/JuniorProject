@@ -10,8 +10,10 @@ from .views import (
     ListProjectsView,
     ProjectDetailView,
     CourseProjectsView,
+    ProjectRollbackView,
     ProjectTaskDeleteView,
     ProjectTasksListView,
+    ProjectVersionHistoryView,
     SaveTaskSubmissionView,
     UpdateProjectView,
     DeleteProjectView,
@@ -41,4 +43,6 @@ urlpatterns = [
     path('tasks/<int:id>/delete/', ProjectTaskDeleteView.as_view(), name='delete-task'),
     path('tasks/<int:task_id>/feedback/', AdminTaskFeedbackView.as_view(), name='admin-task-feedback'),
     path('tasks/<int:task_id>/submission/<int:user_id>/', AdminGetStudentSubmissionView.as_view(), name='admin-get-student-submission'),
+    path('versions/<int:project_id>/', ProjectVersionHistoryView.as_view(), name='prject-versions'),
+    path('rollback/<int:project_id>/<int:version_id>/', ProjectRollbackView.as_view(), name='admin-get-student-submission'),
 ]
