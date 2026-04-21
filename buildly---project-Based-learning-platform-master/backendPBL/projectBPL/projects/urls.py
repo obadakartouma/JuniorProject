@@ -1,6 +1,8 @@
 # projects/urls.py
 from django.urls import path
 from .views import (
+    AdminGetStudentSubmissionView,
+    AdminTaskFeedbackView,
     CreateProjectTaskView,
     CreateProjectView,
     ExecuteCodeView,
@@ -37,4 +39,6 @@ urlpatterns = [
     path('tasks/<int:task_id>/save/', SaveTaskSubmissionView.as_view(), name='save-task-progress'),
     path('tasks/<int:task_id>/get/', GetTaskSubmissionView.as_view(), name='get-task'),
     path('tasks/<int:id>/delete/', ProjectTaskDeleteView.as_view(), name='delete-task'),
+    path('tasks/<int:task_id>/feedback/', AdminTaskFeedbackView.as_view(), name='admin-task-feedback'),
+    path('tasks/<int:task_id>/submission/<int:user_id>/', AdminGetStudentSubmissionView.as_view(), name='admin-get-student-submission'),
 ]

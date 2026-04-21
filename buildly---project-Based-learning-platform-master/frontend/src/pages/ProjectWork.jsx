@@ -193,7 +193,7 @@ const ProjectWork = () => {
             </div>
 
             {/* MAIN */}
-            <div className="main">
+            <div className="workmain">
 
                 <div className="progress-container">
                     <div className="progress-label">

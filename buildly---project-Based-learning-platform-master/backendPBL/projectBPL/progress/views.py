@@ -7,6 +7,31 @@ from progress.models import ProjectProgress
 from django.utils import timezone
 from rest_framework.generics import get_object_or_404
 
+class IsCourseInstructor(permissions.BasePermission):
+    """التحقق من أن المستخدم هو مشرف (أي مشرف في النظام)"""
+    
+    def has_permission(self, request, view):
+        # السماح للجميع بالوصول للقراءة فقط
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        
+        # لإنشاء/تعديل مشروع، يجب أن يكون المستخدم مشرفاً (أي مشرف في النظام)
+        if not request.user.is_admin:
+            return False
+        
+        return True
+    
+    def has_object_permission(self, request, view, obj):
+        """أي مشرف يستطيع تعديل أي مشروع"""
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        
+        # فقط المشرفين يمكنهم التعديل
+        if not request.user.is_admin:
+            return False
+        
+        return True
+
 class UserProjectProgressView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -59,4 +84,52 @@ class ProjectProgressDetailView(APIView):
             'completed_at': progress.completed_at,
             'duration_minutes': duration,
             'progress_percentage': progress.progress_percentage
+        })
+    
+
+class AdminProjectSubmissionsView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
+
+    def get(self, request, project_id):
+        submissions = ProjectProgress.objects.filter(
+            project_id=project_id, 
+            status='completed'
+        ).select_related('user').order_by('-completed_at')
+
+        data = [{
+            'id': s.id,
+            'user_id': s.user.id,
+            'user_email': s.user.email,
+            'completed_at': s.completed_at,
+            'is_graded': s.is_graded,
+            'grade_stars': s.grade_stars,
+            'feedback': s.feedback,
+            'progress_percentage': s.progress_percentage
+        } for s in submissions]
+
+        return Response(data)
+    
+class AdminProjectReviewView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
+
+    def post(self, request, project_id):
+        user_id = request.data.get('userId')
+        stars = request.data.get('stars')
+        overall_feedback = request.data.get('feedback')
+
+        if not user_id or stars is None:
+            return Response({'error': 'userId and stars are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        progress = get_object_or_404(ProjectProgress, project_id=project_id, user_id=user_id)
+
+        progress.grade_stars = stars
+        progress.feedback = overall_feedback
+        progress.is_graded = True
+        progress.save()
+
+        return Response({
+            'message': 'Final project review submitted successfully',
+            'project_id': project_id,
+            'user_id': user_id,
+            'stars': stars
         })

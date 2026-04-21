@@ -231,3 +231,78 @@
   gap: 10px;
   margin-top: 10px;
 }
+
+.submissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.submissions-table th, .submissions-table td {
+  padding: 12px;
+  text-align: right;
+  border-bottom: 1px solid #eee;
+}
+
+.submissions-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.filter-select {
+  padding: 5px 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.student-text-box {
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+    border-right: 4px solid var(--primary-color);
+}
+
+.admin-feedback-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px dashed #ccc;
+}
+
+/* Star Rating */
+.star-rating {
+    display: flex;
+    gap: 10px;
+    font-size: 40px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    direction: ltr;
+    justify-content: center;
+}
+
+.star {
+    color: #ccc;
+    transition: color 0.2s;
+}
+
+.star.filled, .star:hover {
+    color: #ffc107;
+}
+
+.final-review-card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}

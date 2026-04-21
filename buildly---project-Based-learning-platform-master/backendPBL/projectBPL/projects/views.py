@@ -44,7 +44,6 @@ class IsCourseInstructor(permissions.BasePermission):
         return True
 
 
-# projects/views.py
 class CreateProjectView(generics.CreateAPIView):
     """واجهة إنشاء مشروع جديد"""
     
@@ -875,3 +874,48 @@ class GetTaskSubmissionView(APIView):
                 'success': True,
                 'progress': None
             })
+        
+
+class AdminTaskFeedbackView(APIView):
+
+    permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
+
+    def post(self, request, task_id):
+        user_id = request.data.get('userId')
+        admin_feedback = request.data.get('feedback')
+        is_correct = request.data.get('is_correct', True)
+
+        if not user_id:
+            return Response({'error': 'userId is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        submission = get_object_or_404(TaskSubmission, task_id=task_id, user_id=user_id)
+
+        submission.admin_feedback = admin_feedback
+        submission.is_correct = is_correct
+        submission.reviewed_at = timezone.now()
+        submission.save()
+
+        return Response({
+            'message': 'Task feedback saved successfully',
+            'task_id': task_id,
+            'user_id': user_id
+        })
+    
+class AdminGetStudentSubmissionView(APIView):
+   
+    permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
+
+    def get(self, request, task_id, user_id):
+        
+        submission = get_object_or_404(TaskSubmission, task_id=task_id, user_id=user_id)
+        
+        return Response({
+            'id': submission.id,
+            'answer': submission.answer,
+            'admin_feedback': submission.admin_feedback,
+            'is_correct': submission.is_correct,
+            'status': submission.status,
+            'is_completed': submission.is_completed,
+            'last_saved_at': submission.last_saved_at,
+            'reviewed_at': submission.reviewed_at
+        })

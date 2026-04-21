@@ -18,5 +18,10 @@ class ProjectProgress(models.Model):
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
+    is_graded = models.BooleanField(default=False, verbose_name='تم التقييم')
+    feedback = models.TextField(null=True, blank=True, verbose_name='ملاحظات التقييم')
+    grade_stars = models.IntegerField(null=True, blank=True, verbose_name='نسبة الدرجة')
+
+
     class Meta:
         unique_together = ('user', 'project')

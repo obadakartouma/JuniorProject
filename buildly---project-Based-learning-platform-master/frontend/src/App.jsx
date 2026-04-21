@@ -20,6 +20,7 @@ import Profile from './pages/Profile'
 import MyCourses from './pages/MyCourses'
 import './App.css'
 import ProjectWork from './pages/ProjectWork'
+import ProjectReview from './pages/ProjectReview'
 
 function App() {
   return (
@@ -146,6 +147,15 @@ function App() {
                 element={
                   <PrivateRoute>
                     <ProjectWork />
+                  </PrivateRoute>
+                }
+              />
+
+              <Route
+                path="/projects/:id/review/:userId"
+                element={
+                  <PrivateRoute>
+                    <ProjectReview />
                   </PrivateRoute>
                 }
               />

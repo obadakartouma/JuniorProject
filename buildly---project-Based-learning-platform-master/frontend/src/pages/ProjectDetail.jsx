@@ -14,10 +14,15 @@ const ProjectDetail = () => {
   const [error, setError] = useState('')
   const [starting, setStarting] = useState(false)
   const [progress, setProgress] = useState(null)
+  const [submissions, setSubmissions] = useState([])
+  const [filterGraded, setFilterGraded] = useState('all')
 
   useEffect(() => {
     fetchProjectDetails()
-  }, [id])
+    if (isAdmin) {
+      fetchSubmissions();
+    }
+  }, [id, isAdmin])
 
   const fetchProjectDetails = async () => {
     try {
@@ -39,6 +44,21 @@ const ProjectDetail = () => {
       setLoading(false)
     }
   }
+
+  const fetchSubmissions = async () => {
+    try {
+      const response = await projectsAPI.getSubmissions(id);
+      setSubmissions(response.data);
+    } catch (err) {
+      console.error("Failed to fetch submissions", err);
+    }
+  };
+
+  const filteredSubmissions = submissions.filter(s => {
+    if (filterGraded === 'graded') return s.is_graded;
+    if (filterGraded === 'ungraded') return !s.is_graded;
+    return true;
+  });
 
   const handleStart = async () => {
     try {
@@ -164,6 +184,68 @@ const ProjectDetail = () => {
                 </a>
 
               </div>
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="card submissions-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <h2>قائمة التسليمات ({submissions.length})</h2>
+
+                {/* Filter-Dropdown */}
+                <select
+                  value={filterGraded}
+                  onChange={(e) => setFilterGraded(e.target.value)}
+                  className="filter-select"
+                >
+                  <option value="all">الكل</option>
+                  <option value="ungraded">لم يتم تقييمها</option>
+                  <option value="graded">تم تقييمها</option>
+                </select>
+              </div>
+
+              {filteredSubmissions.length === 0 ? (
+                <p>لا يوجد تسليمات تطابق الفلتر حالياً.</p>
+              ) : (
+                <div className="table-responsive">
+                  <table className="submissions-table">
+                    <thead>
+                      <tr>
+                        <th>الطالب</th>
+                        <th>تاريخ التسليم</th>
+                        <th>الحالة</th>
+                        <th>الدرجة</th>
+                        <th>إجراءات</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredSubmissions.map(sub => (
+                        <tr key={sub.id}>
+                          <td>
+                            <div>{sub.user_name}</div>
+                            <small style={{ color: '#666' }}>{sub.user_email}</small>
+                          </td>
+                          <td>{formatDate(sub.completed_at)}</td>
+                          <td>
+                            <span className={`status-badge ${sub.is_graded ? 'completed' : 'in_progress'}`}>
+                              {sub.is_graded ? 'مقيم' : 'بانتظار التقييم'}
+                            </span>
+                          </td>
+                          <td>{sub.grade_stars !== null ? `${sub.grade_stars}★` : '-'}</td>
+                          <td>
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              onClick={() => navigate(`/projects/${id}/review/${sub.user_id}`)}
+                            >
+                              تقييم
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 

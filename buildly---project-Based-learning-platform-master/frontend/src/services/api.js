@@ -189,6 +189,27 @@ export const projectsAPI = {
 
   deleteTask: (taskId) =>
     api.delete(`/projects/tasks/${taskId}/delete/`),
+
+  getSubmissions: (projectId) => 
+    api.get(`/progress/projects/${projectId}/submissions/`),
+
+  saveTaskFeedback: (taskId, userId, data) => {
+    return api.post(`/projects/tasks/${taskId}/feedback/`, {
+      userId,
+      ...data
+    });
+  },
+
+  submitFinalGrade: (projectId, userId, data) => {
+    return api.post(`/progress/projects/${projectId}/review/`, {
+      userId,
+      ...data
+    });
+  },
+
+  getStudentTaskSubmission: (taskId, userId) => {
+    return api.get(`/projects/tasks/${taskId}/submission/${userId}/`);
+  }
 }
 
 export default api
