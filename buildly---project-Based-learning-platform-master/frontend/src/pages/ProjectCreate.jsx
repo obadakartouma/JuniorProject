@@ -66,6 +66,18 @@ const ProjectCreate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (tasks.length === 0) {
+      setError('يجب إضافة مهمة واحدة على الأقل')
+      alert('يجب إضافة مهمة واحدة على الأقل');
+      return;
+    }
+
+    const hasInvalidTask = tasks.some(t => !t.title.trim() || !t.description.trim());
+    if (hasInvalidTask) {
+      setError('بعض المهام المضافة غير مكتملة. يرجى مراجعة عناوين ووصف المهام.');
+      return;
+    }
     setLoading(true)
 
     try {
@@ -117,6 +129,10 @@ const ProjectCreate = () => {
   }
 
   const handleAddTask = () => {
+    if (!newTask.title || !newTask.description) {
+      alert(`المهمة غير مكتملة البيانات`);
+      return;
+    }
     setTasks([
       ...tasks,
       {
@@ -398,7 +414,7 @@ const ProjectCreate = () => {
                 />
 
                 <div className="modal-actions">
-                  <button onClick={handleAddTask} className="btn btn-primary">
+                  <button type="button" onClick={handleAddTask} className="btn btn-primary">
                     حفظ
                   </button>
                   <button

@@ -71,11 +71,9 @@ class ProjectProgressDetailView(APIView):
     def get(self, request, project_id):
         progress = get_object_or_404(ProjectProgress, user=request.user, project_id=project_id)
         
-        # Berechnung der Dauer, falls abgeschlossen
         duration = None
         if progress.started_at and progress.completed_at:
             diff = progress.completed_at - progress.started_at
-            # Dauer in Minuten umrechnen
             duration = round(diff.total_seconds() / 60) 
 
         return Response({
@@ -133,3 +131,25 @@ class AdminProjectReviewView(APIView):
             'user_id': user_id,
             'stars': stars
         })
+    
+class AdminSingleSubmissionView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsCourseInstructor]
+
+    def get(self, request, project_id, user_id):
+        submission = get_object_or_404(
+            ProjectProgress, 
+            project_id=project_id, 
+            user_id=user_id,
+            status='completed'
+        )
+
+        data = {
+            'id': submission.id,
+            'user_id': submission.user.id,
+            'is_graded': submission.is_graded,
+            'grade_stars': submission.grade_stars,
+            'feedback': submission.feedback,
+            'completed_at': submission.completed_at
+        }
+
+        return Response(data)

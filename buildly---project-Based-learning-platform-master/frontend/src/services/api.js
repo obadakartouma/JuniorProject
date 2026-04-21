@@ -209,7 +209,10 @@ export const projectsAPI = {
 
   getStudentTaskSubmission: (taskId, userId) => {
     return api.get(`/projects/tasks/${taskId}/submission/${userId}/`);
-  }
+  },
+
+  getSingleSubmission: (projectId, userId) => 
+    api.get(`/progress/projects/${projectId}/review/${userId}/`),
 }
 
 export default api

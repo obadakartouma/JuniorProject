@@ -5,7 +5,7 @@ import { projectsAPI } from '../services/api'
 import './ProjectWork.css'
 
 const ProjectReview = () => {
-    const { id, userId } = useParams() 
+    const { id, userId } = useParams()
     const navigate = useNavigate()
 
     const [project, setProject] = useState(null)
@@ -29,11 +29,17 @@ const ProjectReview = () => {
             setProject(projRes.data.project)
             setTasks(tasksRes.data || [])
 
+            const subRes = await projectsAPI.getSingleSubmission(id, userId);
+            if (subRes.data) {
+                setOverallStars(subRes.data.grade_stars || 0);
+                setOverallFeedback(subRes.data.feedback || '');
+            }
+
             const currentTask = tasksRes.data[currentIndex]
             const submissionRes = await projectsAPI.getStudentTaskSubmission(currentTask.id, userId)
             setStudentAnswer(submissionRes.data.answer || '')
             setTaskFeedback(submissionRes.data.admin_feedback || '')
-            
+
             setLoading(false)
         } catch (err) {
             console.error(err)
@@ -85,7 +91,7 @@ const ProjectReview = () => {
                 </ul>
             </div>
 
-            <div className="main">
+            <div className="workmain">
                 <div className="task-header">
                     <h2>{currentTask?.title}</h2>
                     <span>مهمة {currentIndex + 1} من {tasks.length}</span>
@@ -107,8 +113,8 @@ const ProjectReview = () => {
 
                     <div className="admin-feedback-section">
                         <h4>ملاحظاتك على هذه المهمة:</h4>
-                        <textarea 
-                            className="text-input" 
+                        <textarea
+                            className="text-input"
                             value={taskFeedback}
                             onChange={(e) => setTaskFeedback(e.target.value)}
                             placeholder="اكتب ملاحظاتك للمدرب هنا..."
@@ -122,8 +128,8 @@ const ProjectReview = () => {
                         <h3>التقييم النهائي للمشروع</h3>
                         <div className="star-rating">
                             {[1, 2, 3, 4, 5].map(star => (
-                                <span 
-                                    key={star} 
+                                <span
+                                    key={star}
                                     className={`star ${overallStars >= star ? 'filled' : ''}`}
                                     onClick={() => setOverallStars(star)}
                                 >
@@ -131,7 +137,7 @@ const ProjectReview = () => {
                                 </span>
                             ))}
                         </div>
-                        <textarea 
+                        <textarea
                             className="text-input"
                             value={overallFeedback}
                             onChange={(e) => setOverallFeedback(e.target.value)}
