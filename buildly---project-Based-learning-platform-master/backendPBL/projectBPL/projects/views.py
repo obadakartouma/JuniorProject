@@ -762,14 +762,14 @@ class ExecuteCodeView(APIView):
                     [
                         "docker", "run", "--rm",
                         "-v", f"{docker_path}:/app",
-                        "--network", "none",          # ❗ no internet
-                        "--memory", "100m",           # ❗ limit RAM
-                        "--cpus", "0.5",              # ❗ limit CPU
+                        "--network", "none",          #  no internet
+                        "--memory", "100m",           #  limit RAM
+                        "--cpus", "0.5",              #  limit CPU
                         "python-runner-image"
                     ],
                     capture_output=True,
                     text=True,
-                    timeout=5  # ❗ kill infinite loops
+                    timeout=5  #  kill infinite loops
                 )
 
                 return Response({
