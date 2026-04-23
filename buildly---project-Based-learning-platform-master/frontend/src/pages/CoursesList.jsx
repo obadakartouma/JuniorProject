@@ -56,27 +56,17 @@ const CoursesList = () => {
     }
   }
 
-  const submitQuiz = async (answers) => {
+  const submitQuiz = async (level) => {
     try {
-      let score = 0
+      
+      await accountAPI.submitQuiz(level);
 
-      Object.values(answers).forEach((a) => {
-        if (a === 1) score++
-      })
-
-      let level = "beginner"
-      if (score >= 8) level = "advanced"
-      else if (score >= 5) level = "intermediate"
-
-      await accountAPI.submitQuiz(level)
-
-      setShowQuiz(false)
-      fetchCourses()
-
+      setShowQuiz(false);
+      fetchCourses();
     } catch (err) {
-      console.error(err)
+      console.error("Fehler beim Speichern des Levels:", err);
     }
-  }
+  };
 
   if (loading) {
     return (

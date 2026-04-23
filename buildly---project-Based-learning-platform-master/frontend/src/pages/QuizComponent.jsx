@@ -75,8 +75,20 @@ const QuizComponent = ({ onFinish }) => {
   }
 
   const finish = () => {
-    onFinish(answers)
-  }
+    let score = 0;
+
+    questions.forEach((q, index) => {
+      if (answers[index] === q.correct) {
+        score++;
+      }
+    });
+
+    let level = "beginner";
+    if (score >= 8) level = "advanced";
+    else if (score >= 5) level = "intermediate";
+
+    onFinish(level);
+  };
 
   const q = questions[current]
 
