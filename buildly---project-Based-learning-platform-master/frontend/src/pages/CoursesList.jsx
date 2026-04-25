@@ -35,7 +35,7 @@ const CoursesList = () => {
     try {
       const res = await accountAPI.getProfile()
 
-      if (!res.data.quiz_info.is_rated) {
+      if (!res.data.quiz_info.is_rated && !isAdmin) {
         setShowQuiz(true)
       }
     } catch (err) {
@@ -58,7 +58,7 @@ const CoursesList = () => {
 
   const submitQuiz = async (level) => {
     try {
-      
+
       await accountAPI.submitQuiz(level);
 
       setShowQuiz(false);
