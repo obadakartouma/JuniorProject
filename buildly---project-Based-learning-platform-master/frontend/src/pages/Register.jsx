@@ -86,19 +86,6 @@ const Register = () => {
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
-          <div className="input-group">
-            <label htmlFor="userType">نوع الحساب</label>
-            <select
-              id="userType"
-              name="userType"
-              value={formData.userType}
-              onChange={handleChange}
-              className="input-group select"
-            >
-              <option value="learner">متعلم</option>
-              <option value="admin">مشرف</option>
-            </select>
-          </div>
 
           <div className="input-group">
             <label htmlFor="email">البريد الإلكتروني</label>
